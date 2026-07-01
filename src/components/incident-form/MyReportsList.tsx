@@ -1,0 +1,115 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { Link } from '@/i18n/navigation';
+import { offlineDb } from '@/lib/offline/db';
+import { StatusBadge } from '@/components/StatusBadge';
+import { cn } from '@/lib/utils';
+
+interface ServerIncidentRow {
+  id: string;
+  incident_reference: string | null;
+  client_generated_id: string | null;
+  exam_date: string | null;
+  code: string | null;
+  status: 'draft' | 'submitted' | 'reviewed' | 'closed';
+  center_id: string;
+  created_at: string;
+}
+
+export function MyReportsList({
+  serverIncidents,
+  centers,
+  incidentCodes,
+}: {
+  serverIncidents: ServerIncidentRow[];
+  centers: { id: string; name: string }[];
+  incidentCodes: { code: string; label: string; is_malpractice: boolean }[];
+}) {
+  const t = useTranslations('myReports');
+  const tForm = useTranslations('incidentForm');
+  const tSync = useTranslations('sync');
+  const tCommon = useTranslations('common');
+
+  const queueItems = useLiveQuery(() => offlineDb.queuedIncidents.toArray(), [], []);
+  const syncedIds = new Set(serverIncidents.map((i) => i.client_generated_id).filter(Boolean));
+  const pendingItems = (queueItems ?? []).filter((q) => !syncedIds.has(q.id));
+
+  const centerName = (id: string) => centers.find((c) => c.id === id)?.name ?? '—';
+  const codeLabel = (code: string | null) => incidentCodes.find((c) => c.code === code);
+
+  async function deleteQueueItem(id: string) {
+    await offlineDb.queuedIncidents.delete(id);
+  }
+
+  const isEmpty = serverIncidents.length === 0 && pendingItems.length === 0;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-slate-900">{t('title')}</h1>
+        <Link href="/incidents/new" className="btn-primary">
+          {t('newButton')}
+        </Link>
+      </div>
+
+      {isEmpty && <p className="text-sm text-slate-500">{t('empty')}</p>}
+
+      <div className="space-y-3">
+        {pendingItems.map((item) => {
+          const code = codeLabel(item.payload.code);
+          return (
+            <div key={item.id} className="card flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-medium text-slate-800">
+                  {code ? `${code.code} — ${code.label}` : item.payload.code}
+                </p>
+                <p className="text-sm text-slate-500">{centerName(item.payload.center_id)}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={cn(
+                    'badge',
+                    item.status === 'error' ? 'bg-amber-100 text-amber-800' : 'bg-brand-100 text-brand-700'
+                  )}
+                >
+                  {item.status === 'error' ? tSync('syncFailed') : tSync('pending')}
+                </span>
+                {item.payload.status === 'draft' && (
+                  <button className="btn-secondary" onClick={() => deleteQueueItem(item.id)}>
+                    {tForm('confirmDelete')}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {serverIncidents.map((incident) => {
+          const code = codeLabel(incident.code);
+          return (
+            <div key={incident.id} className="card flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-medium text-slate-800">
+                  {incident.incident_reference ?? '—'} {code ? `· ${code.code} — ${code.label}` : ''}
+                </p>
+                <p className="text-sm text-slate-500">
+                  {centerName(incident.center_id)} {incident.exam_date ? `· ${incident.exam_date}` : ''}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <StatusBadge status={incident.status} />
+                {incident.status === 'draft' && (
+                  <Link href={`/incidents/${incident.id}`} className="btn-secondary">
+                    {tCommon('edit')}
+                  </Link>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

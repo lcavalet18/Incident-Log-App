@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline — G12++ Exam Incident Log</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        background: #f8fafc;
+        color: #1e293b;
+        padding: 24px;
+        text-align: center;
+      }
+      .card {
+        max-width: 28rem;
+      }
+      h1 {
+        color: #2563eb;
+        font-size: 1.25rem;
+      }
+      button {
+        margin-top: 1rem;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>You're offline</h1>
+      <p>
+        This page hasn't been loaded before, so it can't be shown without a connection.
+        Pages you've already opened (like a form you were filling in) will still work, and
+        anything you submit is saved on this device and will sync automatically once you're
+        back online.
+      </p>
+      <button onclick="location.reload()">Try again</button>
+    </div>
+  </body>
+</html>
