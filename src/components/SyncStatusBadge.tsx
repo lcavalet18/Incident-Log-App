@@ -14,7 +14,9 @@ export function SyncStatusBadge() {
 
   const queueItems = useLiveQuery(() => offlineDb.queuedIncidents.toArray(), [], []);
   const pendingCount = queueItems?.length ?? 0;
-  const hasErrors = queueItems?.some((i) => i.status === 'error') ?? false;
+  const erroredItems = queueItems?.filter((i) => i.status === 'error') ?? [];
+  const hasErrors = erroredItems.length > 0;
+  const firstErrorMessage = erroredItems[0]?.errorMessage ?? null;
 
   useEffect(() => initSyncListeners(), []);
 
@@ -36,14 +38,20 @@ export function SyncStatusBadge() {
     <button
       type="button"
       onClick={() => void syncQueue()}
-      title={hasErrors ? t('syncFailed') : t('offline')}
+      title={
+        hasErrors
+          ? firstErrorMessage
+            ? `${t('syncFailed')} — ${firstErrorMessage} (${t('retrySync')})`
+            : `${t('syncFailed')} (${t('retrySync')})`
+          : t('offline')
+      }
       className={cn(
         'badge cursor-pointer font-mono',
         hasErrors ? 'bg-brand-700 text-white' : 'bg-accent-tint text-brand-700'
       )}
     >
       <span className={cn('h-1.5 w-1.5 rounded-full', hasErrors ? 'bg-white' : 'bg-brand-500')} />
-      {t('pendingCount', { count: pendingCount })}
+      {hasErrors ? t('syncFailedCount', { count: erroredItems.length }) : t('pendingCount', { count: pendingCount })}
     </button>
   );
 }

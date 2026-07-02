@@ -28,8 +28,16 @@ export async function enqueueIncident(
 /**
  * Pushes every queued incident to Supabase, one at a time. Safe to call
  * repeatedly/concurrently: a module-level lock skips overlapping runs, and
- * each incident upserts on `client_generated_id` so a retry after a partial
- * failure never creates a duplicate row.
+ * each incident is looked up by `client_generated_id` before insert so a
+ * retry after a partial failure (e.g. the incident row landed but its
+ * candidate row didn't) never creates a duplicate row.
+ *
+ * Deliberately NOT an upsert: once an incident is created its RLS update
+ * policy only allows a non-staff editor to touch it while it's still a
+ * draft, and most reports are filed straight to "submitted" or later. An
+ * upsert's ON CONFLICT DO UPDATE arm would then be rejected by RLS on
+ * every retry (a new failure mode), so retries look up the existing row
+ * and only insert what's still missing instead of re-writing it.
  */
 export async function syncQueue(): Promise<void> {
   if (syncInFlight) return;
@@ -59,19 +67,30 @@ export async function syncQueue(): Promise<void> {
           attachmentPath = path;
         }
 
-        const { data: incidentRow, error: incidentError } = await supabase
+        const { data: existingIncident, error: lookupError } = await supabase
           .from('incidents')
-          .upsert(
-            {
+          .select('id')
+          .eq('client_generated_id', item.payload.client_generated_id)
+          .maybeSingle();
+
+        if (lookupError) throw lookupError;
+
+        let incidentRow: { id: string };
+        if (existingIncident) {
+          incidentRow = existingIncident;
+        } else {
+          const { data: inserted, error: incidentError } = await supabase
+            .from('incidents')
+            .insert({
               ...item.payload,
               attachment_url: attachmentPath,
-            },
-            { onConflict: 'client_generated_id' }
-          )
-          .select('id')
-          .single();
+            })
+            .select('id')
+            .single();
 
-        if (incidentError) throw incidentError;
+          if (incidentError) throw incidentError;
+          incidentRow = inserted;
+        }
 
         if (item.candidates.length > 0) {
           const { error: deleteError } = await supabase
@@ -92,9 +111,11 @@ export async function syncQueue(): Promise<void> {
 
         await offlineDb.queuedIncidents.delete(item.id);
       } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Sync failed';
+        console.error(`[sync] incident ${item.id} failed to sync:`, errorMessage, err);
         await offlineDb.queuedIncidents.update(item.id, {
           status: 'error',
-          errorMessage: err instanceof Error ? err.message : 'Sync failed',
+          errorMessage,
           retryCount: item.retryCount + 1,
         });
       }

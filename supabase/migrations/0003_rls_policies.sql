@@ -199,10 +199,7 @@ with check (
   exists (
     select 1 from public.incidents i
     where i.id = incident_candidates.incident_id
-      and (
-        (i.reporting_invigilator_id = auth.uid() and i.status = 'draft')
-        or public.is_admin_or_supervisor()
-      )
+      and (i.reporting_invigilator_id = auth.uid() or public.is_admin_or_supervisor())
   )
 );
 

@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from '@/i18n/navigation';
 import { offlineDb } from '@/lib/offline/db';
+import { syncQueue } from '@/lib/offline/sync';
 import { StatusBadge } from '@/components/StatusBadge';
 import { cn } from '@/lib/utils';
 import type { ExamCycle } from '@/types/database';
@@ -79,9 +80,15 @@ export function MyReportsList({
                     'badge',
                     item.status === 'error' ? 'bg-brand-700 text-white' : 'bg-accent-tint text-brand-700'
                   )}
+                  title={item.status === 'error' ? (item.errorMessage ?? undefined) : undefined}
                 >
                   {item.status === 'error' ? tSync('syncFailed') : tSync('pending')}
                 </span>
+                {item.status === 'error' && (
+                  <button className="btn-secondary" onClick={() => void syncQueue()}>
+                    {tSync('retrySync')}
+                  </button>
+                )}
                 {item.payload.status === 'draft' && (
                   <button className="btn-secondary" onClick={() => deleteQueueItem(item.id)}>
                     {tForm('confirmDelete')}
