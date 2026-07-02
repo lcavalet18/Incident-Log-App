@@ -6,6 +6,7 @@ insert into storage.buckets (id, name, public)
 values ('incident-evidence', 'incident-evidence', false)
 on conflict (id) do nothing;
 
+drop policy if exists "incident_evidence_insert_own_folder" on storage.objects;
 create policy "incident_evidence_insert_own_folder"
 on storage.objects for insert
 to authenticated
@@ -14,6 +15,7 @@ with check (
   and (storage.foldername(name))[1] = auth.uid()::text
 );
 
+drop policy if exists "incident_evidence_select_own_or_staff" on storage.objects;
 create policy "incident_evidence_select_own_or_staff"
 on storage.objects for select
 to authenticated
@@ -25,6 +27,7 @@ using (
   )
 );
 
+drop policy if exists "incident_evidence_delete_own_or_staff" on storage.objects;
 create policy "incident_evidence_delete_own_or_staff"
 on storage.objects for delete
 to authenticated

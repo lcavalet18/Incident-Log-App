@@ -70,6 +70,7 @@ create index if not exists idx_incidents_invigilator on public.incidents (report
 create index if not exists idx_incidents_created_at on public.incidents (created_at desc);
 create index if not exists idx_incidents_exam_date on public.incidents (exam_date);
 
+drop trigger if exists trg_incidents_updated_at on public.incidents;
 create trigger trg_incidents_updated_at
 before update on public.incidents
 for each row execute function public.set_updated_at();
@@ -90,6 +91,7 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists trg_incidents_duration on public.incidents;
 create trigger trg_incidents_duration
 before insert or update on public.incidents
 for each row execute function public.calculate_incident_duration();
@@ -114,6 +116,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public;
 
+drop trigger if exists trg_incidents_reference on public.incidents;
 create trigger trg_incidents_reference
 before insert or update on public.incidents
 for each row execute function public.generate_incident_reference();

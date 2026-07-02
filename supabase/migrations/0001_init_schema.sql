@@ -33,6 +33,7 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists trg_profiles_updated_at on public.profiles;
 create trigger trg_profiles_updated_at
 before update on public.profiles
 for each row execute function public.set_updated_at();
@@ -83,6 +84,7 @@ create table if not exists public.incident_codes (
   updated_at timestamptz not null default now()
 );
 
+drop trigger if exists trg_incident_codes_updated_at on public.incident_codes;
 create trigger trg_incident_codes_updated_at
 before update on public.incident_codes
 for each row execute function public.set_updated_at();
