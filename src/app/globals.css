@@ -7,33 +7,81 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+::placeholder {
+  color: #b7c0c8;
+}
+
+select {
+  cursor: pointer;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #c12c68 !important;
+  box-shadow: 0 0 0 3px rgba(193, 44, 104, 0.12) !important;
+}
+
 @layer components {
   .input {
-    @apply block w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink shadow-soft
-      placeholder:text-caption
-      focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600
+    @apply block w-full border border-border bg-surface text-ink
+      placeholder:text-faint
+      focus:outline-none
       disabled:cursor-not-allowed disabled:bg-page disabled:text-muted;
+    border-radius: 7px;
+    padding: 10px 12px;
+    font-size: 14.5px;
   }
   .label {
-    @apply mb-1 block text-sm font-medium text-ink;
+    @apply block text-ink;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold
+    @apply inline-flex items-center justify-center gap-2
       transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 13px 26px;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white shadow-soft hover:bg-brand-700;
+    @apply btn text-white;
+    background: #c12c68;
+    box-shadow: 0 2px 8px rgba(193, 44, 104, 0.28);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: #a8245a;
   }
   .btn-secondary {
-    @apply btn bg-surface text-ink ring-1 ring-inset ring-border hover:bg-page;
+    @apply btn text-ink ring-1 ring-inset ring-border;
+    background: #ffffff;
+    padding: 13px 22px;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: #f6f3f4;
   }
   .btn-danger {
-    @apply btn bg-brand-700 text-white shadow-soft hover:bg-brand-800;
+    @apply btn text-white;
+    background: #a8245a;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: #841d47;
   }
   .card {
-    @apply rounded-lg border border-border bg-surface p-4 shadow-soft sm:p-6;
+    @apply border border-border bg-surface p-4 sm:p-6;
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(31, 42, 49, 0.04), 0 6px 24px rgba(31, 42, 49, 0.04);
   }
   .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center;
+    gap: 6px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding-block: 3px;
+    padding-inline-start: 9px;
+    padding-inline-end: 11px;
   }
 }

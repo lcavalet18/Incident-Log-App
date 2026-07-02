@@ -55,7 +55,7 @@ export function LoginForm() {
       <p className="mb-6 text-center text-sm text-muted">{t('subtitle')}</p>
 
       {!isOnline && (
-        <p className="mb-4 rounded-lg bg-brand-50 p-3 text-sm text-brand-700">{t('offlineWarning')}</p>
+        <p className="mb-4 rounded-lg bg-accent-tint p-3 text-sm text-brand-700">{t('offlineWarning')}</p>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">

@@ -24,7 +24,7 @@ export function AuditTable({ incidents, totalCount }: { incidents: IncidentAudit
   return (
     <div className="overflow-hidden rounded-[10px] border border-border bg-surface shadow-[0_1px_2px_rgba(31,42,49,.04)]">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1600px] text-[13px]">
+        <table className="w-full min-w-[1640px] text-[13px]">
           <thead>
             <tr className="border-b border-border bg-[#f8fafb]">
               {[
@@ -96,7 +96,7 @@ export function AuditTable({ incidents, totalCount }: { incidents: IncidentAudit
                     <span
                       className={cn(
                         'rounded-[5px] px-[7px] py-[2px] font-mono text-xs font-semibold tracking-[.03em]',
-                        mal ? 'bg-brand-50 text-brand-600' : 'bg-neutral-bg text-secondary'
+                        mal ? 'bg-accent-tint text-brand-600' : 'bg-neutral-bg text-secondary'
                       )}
                     >
                       {incident.code ?? '—'}

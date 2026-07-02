@@ -35,6 +35,7 @@ const config: Config = {
         success: '#2f7d5b',
         'success-bg': '#eef7f2',
         'neutral-bg': '#f1f3f5',
+        'accent-tint': '#faf2f6',
       },
       borderColor: {
         DEFAULT: '#d5dbe1',

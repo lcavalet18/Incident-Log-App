@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 const COLORS: Record<IncidentStatus, string> = {
   draft: 'bg-neutral-bg text-muted',
-  submitted: 'bg-brand-50 text-brand-600',
+  submitted: 'bg-accent-tint text-brand-600',
   reviewed: 'bg-success-bg text-success',
   closed: 'bg-neutral-bg text-secondary',
 };

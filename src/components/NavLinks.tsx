@@ -30,7 +30,7 @@ export function NavLinks({ role }: { role: UserRole }) {
             href={link.href}
             className={cn(
               'rounded-[7px] px-[15px] py-2 text-sm font-semibold transition-colors',
-              active ? 'bg-brand-50 text-brand-600' : 'text-secondary hover:bg-mist'
+              active ? 'bg-accent-tint text-brand-600' : 'text-secondary hover:bg-mist'
             )}
           >
             {link.label}

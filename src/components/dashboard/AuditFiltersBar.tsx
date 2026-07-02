@@ -70,10 +70,10 @@ export function AuditFiltersBar({
           />
         </div>
         <div className="flex items-center gap-2">
-          <button type="submit" className="btn-primary px-4 py-2 text-[13px]">
+          <button type="submit" className="btn-primary rounded-md px-4 py-2 text-[13px]">
             {tCommon('filter')}
           </button>
-          <a href="?" className="btn-secondary whitespace-nowrap px-3.5 py-2 text-[13px]">
+          <a href="?" className="btn-secondary whitespace-nowrap rounded-md px-3.5 py-2 text-[13px]">
             {tCommon('clearFilters')}
           </a>
         </div>

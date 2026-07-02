@@ -77,7 +77,7 @@ export function MyReportsList({
                 <span
                   className={cn(
                     'badge',
-                    item.status === 'error' ? 'bg-brand-700 text-white' : 'bg-brand-50 text-brand-700'
+                    item.status === 'error' ? 'bg-brand-700 text-white' : 'bg-accent-tint text-brand-700'
                   )}
                 >
                   {item.status === 'error' ? tSync('syncFailed') : tSync('pending')}

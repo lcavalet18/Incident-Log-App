@@ -42,7 +42,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-[1180px] px-6 py-[34px]">{children}</main>
+      <main className="mx-auto max-w-[1180px] px-6 pb-[72px] pt-[34px]">{children}</main>
     </div>
   );
 }

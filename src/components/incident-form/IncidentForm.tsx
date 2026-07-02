@@ -189,7 +189,7 @@ export function IncidentForm({
             message.type === 'error'
               ? 'mb-4 rounded-lg bg-brand-100 p-3 text-sm text-brand-800'
               : message.type === 'offline'
-                ? 'mb-4 rounded-lg bg-brand-50 p-3 text-sm text-brand-700'
+                ? 'mb-4 rounded-lg bg-accent-tint p-3 text-sm text-brand-700'
                 : 'mb-4 rounded-lg bg-page p-3 text-sm text-ink ring-1 ring-inset ring-border'
           }
         >
@@ -237,7 +237,7 @@ export function IncidentForm({
           <Field label={t('examDate')}>
             <input
               type="date"
-              className="input font-mono"
+              className="input py-[9px] font-mono"
               value={examDate}
               onChange={(e) => setExamDate(e.target.value)}
             />
@@ -330,7 +330,7 @@ export function IncidentForm({
           <Field label={t('timeStarted')}>
             <input
               type="time"
-              className="input font-mono"
+              className="input py-[9px] font-mono"
               value={timeStarted}
               onChange={(e) => setTimeStarted(e.target.value)}
             />
@@ -338,7 +338,7 @@ export function IncidentForm({
           <Field label={t('timeResolved')}>
             <input
               type="time"
-              className="input font-mono"
+              className="input py-[9px] font-mono"
               value={timeResolved}
               onChange={(e) => setTimeResolved(e.target.value)}
             />
@@ -360,7 +360,7 @@ export function IncidentForm({
           <textarea
             rows={3}
             placeholder={t('actionTakenPlaceholder')}
-            className="input resize-y"
+            className="input resize-y py-[11px] leading-[1.5]"
             value={actionTaken}
             onChange={(e) => setActionTaken(e.target.value)}
           />

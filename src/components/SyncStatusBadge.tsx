@@ -39,7 +39,7 @@ export function SyncStatusBadge() {
       title={hasErrors ? t('syncFailed') : t('offline')}
       className={cn(
         'badge cursor-pointer font-mono',
-        hasErrors ? 'bg-brand-700 text-white' : 'bg-brand-50 text-brand-700'
+        hasErrors ? 'bg-brand-700 text-white' : 'bg-accent-tint text-brand-700'
       )}
     >
       <span className={cn('h-1.5 w-1.5 rounded-full', hasErrors ? 'bg-white' : 'bg-brand-500')} />

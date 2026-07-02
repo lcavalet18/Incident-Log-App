@@ -10,7 +10,7 @@ export function ExportButton({ incidents }: { incidents: IncidentAuditRow[] }) {
   return (
     <button
       type="button"
-      className="btn-primary"
+      className="btn-primary px-5 py-[11px] text-sm"
       onClick={() => downloadCsv(incidents, 'exam-incidents')}
       disabled={incidents.length === 0}
     >
