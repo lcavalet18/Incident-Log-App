@@ -1,7 +1,8 @@
-import type { IncidentCode } from '@/types/database';
+import type { ExamCycle, IncidentCode } from '@/types/database';
 
 export interface DashboardFilters {
   examId?: string;
+  examCycle?: ExamCycle;
   centerId?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -19,6 +20,7 @@ export function parseFilters(searchParams: Record<string, string | string[] | un
 
   return {
     examId: get('exam') || undefined,
+    examCycle: (get('cycle') || undefined) as ExamCycle | undefined,
     centerId: get('center') || undefined,
     dateFrom: get('from') || undefined,
     dateTo: get('to') || undefined,
@@ -26,6 +28,27 @@ export function parseFilters(searchParams: Record<string, string | string[] | un
     code: get('code') || undefined,
     status: get('status') || undefined,
     malpracticeOnly: get('malpractice') === '1',
+  };
+}
+
+export interface AuditFilters {
+  examId?: string;
+  examCycle?: ExamCycle;
+  student?: string;
+  search?: string;
+}
+
+export function parseAuditFilters(searchParams: Record<string, string | string[] | undefined>): AuditFilters {
+  const get = (key: string) => {
+    const v = searchParams[key];
+    return Array.isArray(v) ? v[0] : v;
+  };
+
+  return {
+    examId: get('exam') || undefined,
+    examCycle: (get('cycle') || undefined) as ExamCycle | undefined,
+    student: get('student') || undefined,
+    search: get('q') || undefined,
   };
 }
 

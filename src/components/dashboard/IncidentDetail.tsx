@@ -55,6 +55,7 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
             <Row label={tForm('center')} value={incident.centers?.name} />
             <Row label={tForm('roomNumber')} value={incident.room_number} />
             <Row label={tForm('exam')} value={incident.exams?.name} />
+            <Row label={tForm('examCycle')} value={incident.exam_cycle} mono />
             <Row label={tForm('examDate')} value={incident.exam_date} mono />
             <Row label={tForm('session')} value={incident.session} />
           </DetailCard>
@@ -96,8 +97,11 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
             <DetailCard title={t('candidates')}>
               <ul className="divide-y divide-border text-sm">
                 {incident.incident_candidates.map((c) => (
-                  <li key={c.id} className="flex justify-between py-1.5">
-                    <span>{c.student_name}</span>
+                  <li key={c.id} className="flex flex-wrap items-center justify-between gap-x-4 py-1.5">
+                    <span>
+                      {c.student_name}
+                      {c.student_email && <span className="text-muted"> · {c.student_email}</span>}
+                    </span>
                     <span className="font-mono text-muted">{c.student_id}</span>
                   </li>
                 ))}

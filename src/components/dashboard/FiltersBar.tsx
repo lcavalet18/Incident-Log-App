@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import type { DashboardFilters } from '@/lib/incidents/filters';
+import { EXAM_CYCLES } from '@/types/database';
 
 interface FiltersBarProps {
   exams: { id: string; name: string }[];
@@ -39,6 +40,13 @@ export function FiltersBar({ exams, centers, incidentCodes, filters }: FiltersBa
           onChange={(v) => update('exam', v)}
           allLabel={t('allExams')}
           options={exams.map((e) => ({ value: e.id, label: e.name }))}
+        />
+        <FilterSelect
+          label={t('examCycle')}
+          value={filters.examCycle ?? ''}
+          onChange={(v) => update('cycle', v)}
+          allLabel={t('allCycles')}
+          options={EXAM_CYCLES.map((cycle) => ({ value: cycle, label: cycle }))}
         />
         <FilterSelect
           label={t('center')}

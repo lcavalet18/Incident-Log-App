@@ -1,8 +1,10 @@
 import Dexie, { type Table } from 'dexie';
+import type { ExamCycle } from '@/types/database';
 
 export interface QueuedCandidate {
   student_name: string;
-  student_id: string | null;
+  /** Auto-generated server-side on insert — never entered by the invigilator. */
+  student_email: string | null;
 }
 
 /** Mirrors the subset of `incidents` columns collected by the form. */
@@ -12,6 +14,7 @@ export interface QueuedIncidentPayload {
   room_number: string | null;
   exam_id: string | null;
   exam_date: string | null;
+  exam_cycle: ExamCycle | null;
   session: string | null;
   code: string | null;
   scope: 'individual' | 'group' | null;

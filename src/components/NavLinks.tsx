@@ -13,6 +13,7 @@ export function NavLinks({ role }: { role: UserRole }) {
   const links = isStaff
     ? [
         { href: '/dashboard', label: t('dashboard') },
+        { href: '/audit', label: t('audit') },
         { href: '/admin/codes', label: t('codeList') },
       ]
     : [

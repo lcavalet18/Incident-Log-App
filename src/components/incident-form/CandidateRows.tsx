@@ -19,7 +19,7 @@ export function CandidateRows({
   }
 
   function addRow() {
-    onChange([...candidates, { student_name: '', student_id: null }]);
+    onChange([...candidates, { student_name: '', student_email: null }]);
   }
 
   function removeRow(index: number) {
@@ -40,12 +40,13 @@ export function CandidateRows({
               onChange={(e) => updateRow(index, 'student_name', e.target.value)}
             />
           </div>
-          <div className="min-w-[8rem] flex-1">
-            <label className="label">{t('studentId')}</label>
+          <div className="min-w-[10rem] flex-1">
+            <label className="label">{t('studentEmail')}</label>
             <input
-              className="input font-mono"
-              value={candidate.student_id ?? ''}
-              onChange={(e) => updateRow(index, 'student_id', e.target.value)}
+              type="email"
+              className="input"
+              value={candidate.student_email ?? ''}
+              onChange={(e) => updateRow(index, 'student_email', e.target.value)}
             />
           </div>
           <button type="button" className="btn-secondary" onClick={() => removeRow(index)}>

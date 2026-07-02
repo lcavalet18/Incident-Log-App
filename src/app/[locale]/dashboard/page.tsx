@@ -6,7 +6,7 @@ import { FiltersBar } from '@/components/dashboard/FiltersBar';
 import { SummaryStats } from '@/components/dashboard/SummaryStats';
 import { IncidentsTable } from '@/components/dashboard/IncidentsTable';
 import { ExportButton } from '@/components/dashboard/ExportButton';
-import type { IncidentWithCode } from '@/types/database';
+import type { IncidentAuditRow } from '@/types/database';
 
 export default async function DashboardPage({
   params: { locale },
@@ -29,11 +29,12 @@ export default async function DashboardPage({
   let query = supabase
     .from('incidents')
     .select(
-      '*, exams(id, name), centers(id, name), incident_codes(code, label, category, is_malpractice)'
+      '*, exams(id, name), centers(id, name), incident_codes(code, label, category, is_malpractice), incident_candidates(*), profiles(full_name)'
     )
     .order('created_at', { ascending: false });
 
   if (filters.examId) query = query.eq('exam_id', filters.examId);
+  if (filters.examCycle) query = query.eq('exam_cycle', filters.examCycle);
   if (filters.centerId) query = query.eq('center_id', filters.centerId);
   if (filters.dateFrom) query = query.gte('exam_date', filters.dateFrom);
   if (filters.dateTo) query = query.lte('exam_date', filters.dateTo);
@@ -44,7 +45,7 @@ export default async function DashboardPage({
   if (codeAllowlist) query = query.in('code', codeAllowlist.length > 0 ? codeAllowlist : ['__none__']);
 
   const { data } = await query;
-  const incidents = (data ?? []) as unknown as IncidentWithCode[];
+  const incidents = (data ?? []) as unknown as IncidentAuditRow[];
 
   return (
     <div className="space-y-6">

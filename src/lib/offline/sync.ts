@@ -84,7 +84,7 @@ export async function syncQueue(): Promise<void> {
             item.candidates.map((c) => ({
               incident_id: incidentRow.id,
               student_name: c.student_name,
-              student_id: c.student_id,
+              student_email: c.student_email,
             }))
           );
           if (candidatesError) throw candidatesError;

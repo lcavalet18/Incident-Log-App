@@ -1,6 +1,8 @@
 export type UserRole = 'invigilator' | 'supervisor' | 'admin';
 export type IncidentStatus = 'draft' | 'submitted' | 'reviewed' | 'closed';
 export type IncidentScope = 'individual' | 'group';
+export type ExamCycle = 'February 2026' | 'May 2026';
+export const EXAM_CYCLES: ExamCycle[] = ['February 2026', 'May 2026'];
 
 export interface Profile {
   id: string;
@@ -40,6 +42,8 @@ export interface IncidentCandidate {
   id: string;
   incident_id: string;
   student_name: string;
+  student_email: string | null;
+  /** Auto-generated on insert (e.g. STU-2026-000123) — never entered by the invigilator. */
   student_id: string | null;
   created_at: string;
 }
@@ -51,6 +55,7 @@ export interface Incident {
   room_number: string | null;
   exam_id: string | null;
   exam_date: string | null;
+  exam_cycle: ExamCycle | null;
   session: string | null;
   code: string | null;
   scope: IncidentScope | null;
@@ -87,6 +92,10 @@ export interface IncidentWithCode extends Incident {
 
 export interface IncidentWithRelations extends IncidentWithCode {
   incident_candidates: IncidentCandidate[];
+}
+
+export interface IncidentAuditRow extends IncidentWithRelations {
+  profiles: Pick<Profile, 'full_name'> | null;
 }
 
 export interface Database {

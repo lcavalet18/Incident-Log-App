@@ -6,7 +6,7 @@ import { useRouter } from '@/i18n/navigation';
 import { enqueueIncident } from '@/lib/offline/sync';
 import { newClientGeneratedId, combineDateAndTime, calcDurationMinutes } from '@/lib/incidents/reference';
 import type { QueuedCandidate } from '@/lib/offline/db';
-import type { Center, Exam, Incident, IncidentCandidate, IncidentCode } from '@/types/database';
+import { EXAM_CYCLES, type Center, type Exam, type ExamCycle, type Incident, type IncidentCandidate, type IncidentCode } from '@/types/database';
 import { CandidateRows } from './CandidateRows';
 
 interface IncidentFormProps {
@@ -44,9 +44,13 @@ export function IncidentForm({
   const [roomNumber, setRoomNumber] = useState(initialIncident?.room_number ?? '');
   const [examId, setExamId] = useState(initialIncident?.exam_id ?? '');
   const [examDate, setExamDate] = useState(initialIncident?.exam_date ?? '');
+  const [examCycle, setExamCycle] = useState<ExamCycle | ''>(initialIncident?.exam_cycle ?? '');
   const [session, setSession] = useState(initialIncident?.session ?? '');
 
   const [code, setCode] = useState(initialIncident?.code ?? '');
+  const [category, setCategory] = useState(
+    () => incidentCodes.find((c) => c.code === initialIncident?.code)?.category ?? ''
+  );
   const [scope, setScope] = useState<'individual' | 'group' | ''>(initialIncident?.scope ?? '');
 
   const [timeStarted, setTimeStarted] = useState(toTimeInput(initialIncident?.time_started));
@@ -64,8 +68,10 @@ export function IncidentForm({
   );
 
   const [candidates, setCandidates] = useState<QueuedCandidate[]>(
-    initialIncident?.incident_candidates.map((c) => ({ student_name: c.student_name, student_id: c.student_id })) ??
-      []
+    initialIncident?.incident_candidates.map((c) => ({
+      student_name: c.student_name,
+      student_email: c.student_email,
+    })) ?? []
   );
 
   const [witnesses, setWitnesses] = useState(initialIncident?.witnesses ?? '');
@@ -91,19 +97,24 @@ export function IncidentForm({
   const endIso = combineDateAndTime(examDate || null, timeResolved || null);
   const durationPreview = calcDurationMinutes(startIso, endIso);
 
-  const categories = useMemo(() => {
-    const map = new Map<string, IncidentCode[]>();
-    for (const c of incidentCodes) {
-      if (!map.has(c.category)) map.set(c.category, []);
-      map.get(c.category)!.push(c);
-    }
-    return Array.from(map.entries());
-  }, [incidentCodes]);
+  const categories = useMemo(() => Array.from(new Set(incidentCodes.map((c) => c.category))), [incidentCodes]);
+
+  const issuesForCategory = useMemo(
+    () => incidentCodes.filter((c) => c.category === category),
+    [incidentCodes, category]
+  );
+
+  function handleCategoryChange(next: string) {
+    setCategory(next);
+    setCode('');
+  }
 
   function validate(): FormErrors {
     const next: FormErrors = {};
     if (!centerId) next.centerId = tCommon('required');
     if (!examId) next.examId = tCommon('required');
+    if (!examCycle) next.examCycle = tCommon('required');
+    if (!category) next.category = tCommon('required');
     if (!code) next.code = tCommon('required');
     if (!scope) next.scope = tCommon('required');
     if (!timeStarted) next.timeStarted = tCommon('required');
@@ -136,6 +147,7 @@ export function IncidentForm({
         room_number: roomNumber || null,
         exam_id: examId || null,
         exam_date: examDate || null,
+        exam_cycle: (examCycle || null) as ExamCycle | null,
         session: session || null,
         code: code || null,
         scope: (scope || null) as 'individual' | 'group' | null,
@@ -207,10 +219,24 @@ export function IncidentForm({
           </Field>
           <Field label={t('exam')} error={errors.examId}>
             <select className="input" value={examId} onChange={(e) => setExamId(e.target.value)}>
-              <option value="">{t('codePlaceholder')}</option>
+              <option value="">{tCommon('selectPlaceholder')}</option>
               {exams.map((e) => (
                 <option key={e.id} value={e.id}>
                   {e.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={t('examCycle')} error={errors.examCycle}>
+            <select
+              className="input"
+              value={examCycle}
+              onChange={(e) => setExamCycle(e.target.value as ExamCycle)}
+            >
+              <option value="">{t('examCyclePlaceholder')}</option>
+              {EXAM_CYCLES.map((cycle) => (
+                <option key={cycle} value={cycle}>
+                  {cycle}
                 </option>
               ))}
             </select>
@@ -237,17 +263,28 @@ export function IncidentForm({
       <section className="card space-y-4">
         <h2 className="font-semibold text-ink">{t('sectionClassification')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t('code')} error={errors.code}>
-            <select className="input" value={code} onChange={(e) => setCode(e.target.value)}>
-              <option value="">{t('codePlaceholder')}</option>
-              {categories.map(([category, codes]) => (
-                <optgroup key={category} label={tCategory(category as never)}>
-                  {codes.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.code} — {c.label}
-                    </option>
-                  ))}
-                </optgroup>
+          <Field label={t('categoryField')} error={errors.category}>
+            <select className="input" value={category} onChange={(e) => handleCategoryChange(e.target.value)}>
+              <option value="">{t('categoryPlaceholder')}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {tCategory(cat as never)}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={t('specificIssue')} error={errors.code}>
+            <select
+              className="input"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              disabled={!category}
+            >
+              <option value="">{t('issuePlaceholder')}</option>
+              {issuesForCategory.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.label}
+                </option>
               ))}
             </select>
           </Field>
@@ -257,7 +294,7 @@ export function IncidentForm({
               value={scope}
               onChange={(e) => setScope(e.target.value as 'individual' | 'group')}
             >
-              <option value="">{t('codePlaceholder')}</option>
+              <option value="">{tCommon('selectPlaceholder')}</option>
               <option value="individual">{tScope('individual')}</option>
               <option value="group">{tScope('group')}</option>
             </select>
@@ -309,7 +346,13 @@ export function IncidentForm({
           />
         </Field>
         <Field label={t('actionTaken')}>
-          <textarea className="input" rows={2} value={actionTaken} onChange={(e) => setActionTaken(e.target.value)} />
+          <textarea
+            className="input"
+            rows={3}
+            placeholder={t('actionTakenHint')}
+            value={actionTaken}
+            onChange={(e) => setActionTaken(e.target.value)}
+          />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('remedialAction')}>
