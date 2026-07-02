@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
-import { requireStaff } from '@/lib/auth';
+import { getCurrentUserAndProfile, isStaff } from '@/lib/auth';
 import { parseAuditFilters, codesMatchingCategory } from '@/lib/incidents/filters';
 import { AuditFiltersBar } from '@/components/dashboard/AuditFiltersBar';
 import { AuditStats } from '@/components/dashboard/AuditStats';
@@ -9,17 +9,19 @@ import { ExportButton } from '@/components/dashboard/ExportButton';
 import type { IncidentAuditRow } from '@/types/database';
 
 export default async function AuditPage({
-  params: { locale },
   searchParams,
 }: {
-  params: { locale: string };
   searchParams: Record<string, string | string[] | undefined>;
 }) {
-  await requireStaff(locale);
+  // Every authenticated role can reach this page (middleware already
+  // requires a session); row-level security scopes what comes back —
+  // invigilators only ever see incidents they filed themselves.
   const supabase = createClient();
   const filters = parseAuditFilters(searchParams);
   const t = await getTranslations('audit');
   const tCategory = await getTranslations('category');
+  const { profile } = await getCurrentUserAndProfile();
+  const canViewDetail = isStaff(profile);
 
   const [{ data: centers }, { data: exams }, { data: incidentCodes }, { count: totalCount }] = await Promise.all([
     supabase.from('centers').select('id, name').order('name'),
@@ -86,7 +88,7 @@ export default async function AuditPage({
 
       <AuditFiltersBar centers={centers ?? []} exams={exams ?? []} categories={categories} filters={filters} />
 
-      <AuditTable incidents={incidents} totalCount={totalCount ?? incidents.length} />
+      <AuditTable incidents={incidents} totalCount={totalCount ?? incidents.length} canViewDetail={canViewDetail} />
     </div>
   );
 }

@@ -2,27 +2,21 @@
 
 import { Link, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import type { UserRole } from '@/types/database';
 import { cn } from '@/lib/utils';
 
-export function NavLinks({ role }: { role: UserRole }) {
+const LINKS = [
+  { href: '/incidents/new', key: 'newIncident' as const },
+  { href: '/audit', key: 'audit' as const },
+  { href: '/admin/codes', key: 'codeList' as const },
+];
+
+export function NavLinks() {
   const pathname = usePathname();
   const t = useTranslations('nav');
-  const isStaff = role === 'admin' || role === 'supervisor';
-
-  const links = isStaff
-    ? [
-        { href: '/audit', label: t('audit') },
-        { href: '/admin/codes', label: t('codeList') },
-      ]
-    : [
-        { href: '/incidents', label: t('myReports') },
-        { href: '/incidents/new', label: t('newIncident') },
-      ];
 
   return (
     <nav className="ms-2 flex gap-1">
-      {links.map((link) => {
+      {LINKS.map((link) => {
         const active = pathname?.includes(link.href);
         return (
           <Link
@@ -33,7 +27,7 @@ export function NavLinks({ role }: { role: UserRole }) {
               active ? 'bg-accent-tint text-brand-600' : 'text-secondary hover:bg-mist'
             )}
           >
-            {link.label}
+            {t(link.key)}
           </Link>
         );
       })}

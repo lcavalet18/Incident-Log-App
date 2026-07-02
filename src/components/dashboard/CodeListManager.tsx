@@ -6,7 +6,13 @@ import { useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { IncidentCode } from '@/types/database';
 
-export function CodeListManager({ incidentCodes }: { incidentCodes: IncidentCode[] }) {
+export function CodeListManager({
+  incidentCodes,
+  canManage,
+}: {
+  incidentCodes: IncidentCode[];
+  canManage: boolean;
+}) {
   const t = useTranslations('codes');
   const tCommon = useTranslations('common');
   const router = useRouter();
@@ -66,9 +72,13 @@ export function CodeListManager({ incidentCodes }: { incidentCodes: IncidentCode
                 <td className="px-4 py-2">{c.category}</td>
                 <td className="px-4 py-2">{c.is_malpractice ? tCommon('yes') : tCommon('no')}</td>
                 <td className="px-4 py-2">
-                  <button type="button" className="btn-secondary" onClick={() => toggleActive(c)}>
-                    {c.is_active ? tCommon('yes') : tCommon('no')}
-                  </button>
+                  {canManage ? (
+                    <button type="button" className="btn-secondary" onClick={() => toggleActive(c)}>
+                      {c.is_active ? tCommon('yes') : tCommon('no')}
+                    </button>
+                  ) : (
+                    <span>{c.is_active ? tCommon('yes') : tCommon('no')}</span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -76,33 +86,35 @@ export function CodeListManager({ incidentCodes }: { incidentCodes: IncidentCode
         </table>
       </div>
 
-      <form onSubmit={handleAdd} className="card grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <label className="label">{t('code')}</label>
-          <input className="input" value={code} onChange={(e) => setCode(e.target.value)} maxLength={6} />
-        </div>
-        <div>
-          <label className="label">{t('label')}</label>
-          <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} />
-        </div>
-        <div>
-          <label className="label">{t('category')}</label>
-          <input className="input" value={category} onChange={(e) => setCategory(e.target.value)} />
-        </div>
-        <div className="flex items-end gap-4">
-          <label className="flex items-center gap-2 text-sm text-ink">
-            <input
-              type="checkbox"
-              checked={isMalpractice}
-              onChange={(e) => setIsMalpractice(e.target.checked)}
-            />
-            {t('isMalpractice')}
-          </label>
-          <button type="submit" className="btn-primary" disabled={saving}>
-            {t('addCode')}
-          </button>
-        </div>
-      </form>
+      {canManage && (
+        <form onSubmit={handleAdd} className="card grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <label className="label">{t('code')}</label>
+            <input className="input" value={code} onChange={(e) => setCode(e.target.value)} maxLength={6} />
+          </div>
+          <div>
+            <label className="label">{t('label')}</label>
+            <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">{t('category')}</label>
+            <input className="input" value={category} onChange={(e) => setCategory(e.target.value)} />
+          </div>
+          <div className="flex items-end gap-4">
+            <label className="flex items-center gap-2 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={isMalpractice}
+                onChange={(e) => setIsMalpractice(e.target.checked)}
+              />
+              {t('isMalpractice')}
+            </label>
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {t('addCode')}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

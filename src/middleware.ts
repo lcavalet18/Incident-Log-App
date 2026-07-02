@@ -36,7 +36,7 @@ export default async function middleware(request: NextRequest) {
 
   if (user && pathWithoutLocale === '/login') {
     const locale = request.nextUrl.pathname.split('/')[1] || defaultLocale;
-    return NextResponse.redirect(new URL(`/${locale}/incidents`, request.url));
+    return NextResponse.redirect(new URL(`/${locale}/incidents/new`, request.url));
   }
 
   return response;

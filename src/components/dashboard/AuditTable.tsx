@@ -13,7 +13,15 @@ function formatTime(iso: string | null): string {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-export function AuditTable({ incidents, totalCount }: { incidents: IncidentAuditRow[]; totalCount: number }) {
+export function AuditTable({
+  incidents,
+  totalCount,
+  canViewDetail = false,
+}: {
+  incidents: IncidentAuditRow[];
+  totalCount: number;
+  canViewDetail?: boolean;
+}) {
   const t = useTranslations('audit');
   const tTable = useTranslations('audit.table');
 
@@ -63,9 +71,13 @@ export function AuditTable({ incidents, totalCount }: { incidents: IncidentAudit
                   className={cn('border-b border-divider', mal ? 'bg-brand-600/[0.045]' : 'bg-surface')}
                 >
                   <td className="whitespace-nowrap px-3.5 py-[13px] align-top font-mono text-[12.5px] font-medium text-ink">
-                    <Link href={`/dashboard/${incident.id}`} className="hover:underline">
-                      {incident.incident_reference ?? incident.id.slice(0, 8)}
-                    </Link>
+                    {canViewDetail ? (
+                      <Link href={`/dashboard/${incident.id}`} className="hover:underline">
+                        {incident.incident_reference ?? incident.id.slice(0, 8)}
+                      </Link>
+                    ) : (
+                      incident.incident_reference ?? incident.id.slice(0, 8)
+                    )}
                   </td>
                   <td className="whitespace-nowrap px-3.5 py-[13px] align-top text-ink">
                     {incident.centers?.name ?? '—'}

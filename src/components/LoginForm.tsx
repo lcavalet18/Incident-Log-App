@@ -34,15 +34,8 @@ export function LoginForm() {
       return;
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', data.user.id)
-      .single();
-
-    const isStaff = profile?.role === 'admin' || profile?.role === 'supervisor';
     const next = searchParams.get('next');
-    router.push(next ?? (isStaff ? '/audit' : '/incidents'));
+    router.push(next ?? '/incidents/new');
     router.refresh();
   }
 

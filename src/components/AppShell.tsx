@@ -18,9 +18,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen bg-page">{children}</div>;
   }
 
-  const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single();
-  const role = profile?.role ?? 'invigilator';
-
   return (
     <div className="min-h-screen bg-page">
       <header className="sticky top-0 z-20 border-b border-border bg-surface">
@@ -33,7 +30,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <NavLinks role={role} />
+          <NavLinks />
 
           <div className="ms-auto flex items-center gap-4">
             <SyncStatusBadge />
