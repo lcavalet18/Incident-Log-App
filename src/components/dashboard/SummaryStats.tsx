@@ -35,8 +35,8 @@ export function SummaryStats({ incidents }: { incidents: IncidentWithCode[] }) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
         <div key={card.label} className="card">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{card.label}</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{card.value}</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">{card.label}</p>
+          <p className="mt-1 font-mono text-2xl font-bold text-ink">{card.value}</p>
         </div>
       ))}
     </div>

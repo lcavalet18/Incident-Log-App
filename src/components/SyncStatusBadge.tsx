@@ -22,13 +22,11 @@ export function SyncStatusBadge() {
     return (
       <span
         className={cn(
-          'badge',
-          isOnline ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+          'badge font-mono',
+          isOnline ? 'bg-page text-muted ring-1 ring-inset ring-border' : 'bg-border text-ink'
         )}
       >
-        <span
-          className={cn('h-1.5 w-1.5 rounded-full', isOnline ? 'bg-emerald-500' : 'bg-slate-400')}
-        />
+        <span className={cn('h-1.5 w-1.5 rounded-full', isOnline ? 'bg-muted' : 'bg-ink')} />
         {isOnline ? t('online') : t('offline')}
       </span>
     );
@@ -40,11 +38,11 @@ export function SyncStatusBadge() {
       onClick={() => void syncQueue()}
       title={hasErrors ? t('syncFailed') : t('offline')}
       className={cn(
-        'badge cursor-pointer',
-        hasErrors ? 'bg-amber-100 text-amber-800' : 'bg-brand-100 text-brand-700'
+        'badge cursor-pointer font-mono',
+        hasErrors ? 'bg-brand-700 text-white' : 'bg-brand-50 text-brand-700'
       )}
     >
-      <span className={cn('h-1.5 w-1.5 rounded-full', hasErrors ? 'bg-amber-500' : 'bg-brand-500')} />
+      <span className={cn('h-1.5 w-1.5 rounded-full', hasErrors ? 'bg-white' : 'bg-brand-500')} />
       {t('pendingCount', { count: pendingCount })}
     </button>
   );

@@ -174,16 +174,16 @@ export function IncidentForm({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-900">{isEdit ? t('editTitle') : t('title')}</h1>
+      <h1 className="text-xl font-bold text-ink">{isEdit ? t('editTitle') : t('title')}</h1>
 
       {message && (
         <div
           className={
             message.type === 'error'
-              ? 'rounded-md bg-malpractice-50 p-3 text-sm text-malpractice-700'
+              ? 'rounded-lg bg-brand-100 p-3 text-sm text-brand-800'
               : message.type === 'offline'
-                ? 'rounded-md bg-amber-50 p-3 text-sm text-amber-800'
-                : 'rounded-md bg-emerald-50 p-3 text-sm text-emerald-700'
+                ? 'rounded-lg bg-brand-50 p-3 text-sm text-brand-700'
+                : 'rounded-lg bg-page p-3 text-sm text-ink ring-1 ring-inset ring-border'
           }
         >
           {message.text}
@@ -191,7 +191,7 @@ export function IncidentForm({
       )}
 
       <section className="card space-y-4">
-        <h2 className="font-semibold text-slate-800">{t('sectionContext')}</h2>
+        <h2 className="font-semibold text-ink">{t('sectionContext')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('center')} error={errors.centerId}>
             <select className="input" value={centerId} onChange={(e) => setCenterId(e.target.value)}>
@@ -218,7 +218,7 @@ export function IncidentForm({
           <Field label={t('examDate')}>
             <input
               type="date"
-              className="input"
+              className="input font-mono"
               value={examDate}
               onChange={(e) => setExamDate(e.target.value)}
             />
@@ -235,7 +235,7 @@ export function IncidentForm({
       </section>
 
       <section className="card space-y-4">
-        <h2 className="font-semibold text-slate-800">{t('sectionClassification')}</h2>
+        <h2 className="font-semibold text-ink">{t('sectionClassification')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('code')} error={errors.code}>
             <select className="input" value={code} onChange={(e) => setCode(e.target.value)}>
@@ -264,17 +264,17 @@ export function IncidentForm({
           </Field>
         </div>
         {isMalpractice && (
-          <p className="badge bg-malpractice-100 text-malpractice-700">{tCategory('Malpractice & Integrity')}</p>
+          <p className="badge bg-brand-100 text-brand-700">{tCategory('Malpractice & Integrity')}</p>
         )}
       </section>
 
       <section className="card space-y-4">
-        <h2 className="font-semibold text-slate-800">{t('sectionTiming')}</h2>
+        <h2 className="font-semibold text-ink">{t('sectionTiming')}</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label={t('timeStarted')} error={errors.timeStarted}>
             <input
               type="time"
-              className="input"
+              className="input font-mono"
               value={timeStarted}
               onChange={(e) => setTimeStarted(e.target.value)}
             />
@@ -282,19 +282,24 @@ export function IncidentForm({
           <Field label={t('timeResolved')}>
             <input
               type="time"
-              className="input"
+              className="input font-mono"
               value={timeResolved}
               onChange={(e) => setTimeResolved(e.target.value)}
             />
           </Field>
           <Field label={t('durationMinutes')}>
-            <input className="input bg-slate-100" disabled value={durationPreview ?? ''} placeholder={t('durationAuto')} />
+            <input
+              className="input bg-page font-mono"
+              disabled
+              value={durationPreview ?? ''}
+              placeholder={t('durationAuto')}
+            />
           </Field>
         </div>
       </section>
 
       <section className="card space-y-4">
-        <h2 className="font-semibold text-slate-800">{t('sectionDescription')}</h2>
+        <h2 className="font-semibold text-ink">{t('sectionDescription')}</h2>
         <Field label={t('description')} error={errors.description}>
           <textarea
             className="input"
@@ -317,14 +322,14 @@ export function IncidentForm({
             <input
               type="number"
               min={0}
-              className="input"
+              className="input font-mono"
               value={questionsAffectedCount}
               onChange={(e) => setQuestionsAffectedCount(e.target.value)}
             />
           </Field>
           <Field label={t('questionsAffectedList')}>
             <input
-              className="input"
+              className="input font-mono"
               placeholder="1, 2, 3"
               value={questionsAffectedList}
               onChange={(e) => setQuestionsAffectedList(e.target.value)}
@@ -334,13 +339,13 @@ export function IncidentForm({
       </section>
 
       <section className="card space-y-4">
-        <h2 className="font-semibold text-slate-800">{t('sectionCandidates')}</h2>
+        <h2 className="font-semibold text-ink">{t('sectionCandidates')}</h2>
         <CandidateRows candidates={candidates} onChange={setCandidates} />
       </section>
 
       {isMalpractice && (
-        <section className="card space-y-4 border-malpractice-200 bg-malpractice-50/40">
-          <h2 className="font-semibold text-malpractice-700">{t('sectionMalpractice')}</h2>
+        <section className="card space-y-4 border-brand-200 bg-brand-50/40">
+          <h2 className="font-semibold text-brand-700">{t('sectionMalpractice')}</h2>
           <Field label={t('witnesses')}>
             <textarea
               className="input"
@@ -350,7 +355,7 @@ export function IncidentForm({
               onChange={(e) => setWitnesses(e.target.value)}
             />
           </Field>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input
               type="checkbox"
               checked={evidenceConfiscated}
@@ -365,14 +370,14 @@ export function IncidentForm({
               className="input"
               onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
             />
-            <p className="mt-1 text-xs text-slate-500">{t('uploadWhenOnline')}</p>
+            <p className="mt-1 text-xs text-muted">{t('uploadWhenOnline')}</p>
           </Field>
         </section>
       )}
 
       {!isMalpractice && (
         <section className="card space-y-4">
-          <h2 className="font-semibold text-slate-800">{t('sectionAttachment')}</h2>
+          <h2 className="font-semibold text-ink">{t('sectionAttachment')}</h2>
           <Field label={t('attachment')}>
             <input
               type="file"
@@ -380,13 +385,13 @@ export function IncidentForm({
               className="input"
               onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
             />
-            <p className="mt-1 text-xs text-slate-500">{t('uploadWhenOnline')}</p>
+            <p className="mt-1 text-xs text-muted">{t('uploadWhenOnline')}</p>
           </Field>
         </section>
       )}
 
       <section className="card space-y-4">
-        <h2 className="font-semibold text-slate-800">{t('sectionFollowUp')}</h2>
+        <h2 className="font-semibold text-ink">{t('sectionFollowUp')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('supervisorName')}>
             <input className="input" value={supervisorName} onChange={(e) => setSupervisorName(e.target.value)} />
@@ -401,7 +406,7 @@ export function IncidentForm({
           </Field>
         </div>
         <div className="flex flex-wrap gap-6">
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input
               type="checkbox"
               checked={reportedToBoard}
@@ -409,7 +414,7 @@ export function IncidentForm({
             />
             {t('reportedToBoard')}
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input
               type="checkbox"
               checked={followUpRequired}
@@ -460,7 +465,7 @@ function Field({
     <div>
       <label className="label">{label}</label>
       {children}
-      {error && <p className="mt-1 text-xs text-malpractice-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-brand-600">{error}</p>}
     </div>
   );
 }

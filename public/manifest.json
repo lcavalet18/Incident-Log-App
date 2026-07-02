@@ -4,8 +4,8 @@
   "description": "Track technical issues and malpractice incidents during G12++ exam sittings.",
   "start_url": "/en/incidents",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#2563eb",
+  "background_color": "#fbfcfd",
+  "theme_color": "#c12c68",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -45,11 +45,11 @@ export function CodeListManager({ incidentCodes }: { incidentCodes: IncidentCode
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-slate-900">{t('title')}</h1>
+      <h1 className="text-xl font-bold text-ink">{t('title')}</h1>
 
       <div className="card overflow-x-auto p-0">
         <table className="w-full text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-border bg-page text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3 text-start">{t('code')}</th>
               <th className="px-4 py-3 text-start">{t('label')}</th>
@@ -58,7 +58,7 @@ export function CodeListManager({ incidentCodes }: { incidentCodes: IncidentCode
               <th className="px-4 py-3 text-start">{t('isActive')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border">
             {incidentCodes.map((c) => (
               <tr key={c.code} className={c.is_active ? '' : 'opacity-50'}>
                 <td className="px-4 py-2 font-mono">{c.code}</td>
@@ -90,7 +90,7 @@ export function CodeListManager({ incidentCodes }: { incidentCodes: IncidentCode
           <input className="input" value={category} onChange={(e) => setCategory(e.target.value)} />
         </div>
         <div className="flex items-end gap-4">
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input
               type="checkbox"
               checked={isMalpractice}

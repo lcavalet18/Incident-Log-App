@@ -48,13 +48,13 @@ export function MyReportsList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-slate-900">{t('title')}</h1>
+        <h1 className="text-xl font-bold text-ink">{t('title')}</h1>
         <Link href="/incidents/new" className="btn-primary">
           {t('newButton')}
         </Link>
       </div>
 
-      {isEmpty && <p className="text-sm text-slate-500">{t('empty')}</p>}
+      {isEmpty && <p className="text-sm text-muted">{t('empty')}</p>}
 
       <div className="space-y-3">
         {pendingItems.map((item) => {
@@ -62,16 +62,22 @@ export function MyReportsList({
           return (
             <div key={item.id} className="card flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="font-medium text-slate-800">
-                  {code ? `${code.code} — ${code.label}` : item.payload.code}
+                <p className="font-medium text-ink">
+                  {code ? (
+                    <>
+                      <span className="font-mono">{code.code}</span> — {code.label}
+                    </>
+                  ) : (
+                    <span className="font-mono">{item.payload.code}</span>
+                  )}
                 </p>
-                <p className="text-sm text-slate-500">{centerName(item.payload.center_id)}</p>
+                <p className="text-sm text-muted">{centerName(item.payload.center_id)}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span
                   className={cn(
                     'badge',
-                    item.status === 'error' ? 'bg-amber-100 text-amber-800' : 'bg-brand-100 text-brand-700'
+                    item.status === 'error' ? 'bg-brand-700 text-white' : 'bg-brand-50 text-brand-700'
                   )}
                 >
                   {item.status === 'error' ? tSync('syncFailed') : tSync('pending')}
@@ -91,10 +97,17 @@ export function MyReportsList({
           return (
             <div key={incident.id} className="card flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="font-medium text-slate-800">
-                  {incident.incident_reference ?? '—'} {code ? `· ${code.code} — ${code.label}` : ''}
+                <p className="font-medium text-ink">
+                  <span className="font-mono">{incident.incident_reference ?? '—'}</span>{' '}
+                  {code ? (
+                    <>
+                      · <span className="font-mono">{code.code}</span> — {code.label}
+                    </>
+                  ) : (
+                    ''
+                  )}
                 </p>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted">
                   {centerName(incident.center_id)} {incident.exam_date ? `· ${incident.exam_date}` : ''}
                 </p>
               </div>

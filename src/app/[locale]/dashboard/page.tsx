@@ -49,7 +49,7 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-slate-900">{t('title')}</h1>
+        <h1 className="text-xl font-bold text-ink">{t('title')}</h1>
         <ExportButton incidents={incidents} />
       </div>
 

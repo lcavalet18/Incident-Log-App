@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { Logo } from '@/components/Logo';
 
 export function LoginForm() {
   const t = useTranslations('auth');
@@ -47,11 +48,14 @@ export function LoginForm() {
 
   return (
     <div className="card">
-      <h1 className="mb-1 text-xl font-bold text-brand-800">{t('title')}</h1>
-      <p className="mb-6 text-sm text-slate-500">{t('subtitle')}</p>
+      <div className="mb-6 flex justify-center">
+        <Logo size="lg" />
+      </div>
+      <h1 className="mb-1 text-center text-xl font-bold text-ink">{t('title')}</h1>
+      <p className="mb-6 text-center text-sm text-muted">{t('subtitle')}</p>
 
       {!isOnline && (
-        <p className="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-800">{t('offlineWarning')}</p>
+        <p className="mb-4 rounded-lg bg-brand-50 p-3 text-sm text-brand-700">{t('offlineWarning')}</p>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -84,7 +88,7 @@ export function LoginForm() {
           />
         </div>
 
-        {error && <p className="text-sm text-malpractice-600">{error}</p>}
+        {error && <p className="text-sm text-brand-600">{error}</p>}
 
         <button type="submit" disabled={loading} className="btn-primary w-full">
           {loading ? tc('loading') : t('submit')}

@@ -28,10 +28,10 @@ export function CandidateRows({
 
   return (
     <div className="space-y-3">
-      {candidates.length === 0 && <p className="text-sm text-slate-500">{t('noCandidates')}</p>}
+      {candidates.length === 0 && <p className="text-sm text-muted">{t('noCandidates')}</p>}
 
       {candidates.map((candidate, index) => (
-        <div key={index} className="flex flex-wrap items-end gap-3 rounded-md border border-slate-200 p-3">
+        <div key={index} className="flex flex-wrap items-end gap-3 rounded-lg border border-border p-3">
           <div className="min-w-[10rem] flex-1">
             <label className="label">{t('studentName')}</label>
             <input
@@ -43,7 +43,7 @@ export function CandidateRows({
           <div className="min-w-[8rem] flex-1">
             <label className="label">{t('studentId')}</label>
             <input
-              className="input"
+              className="input font-mono"
               value={candidate.student_id ?? ''}
               onChange={(e) => updateRow(index, 'student_id', e.target.value)}
             />

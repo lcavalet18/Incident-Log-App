@@ -5,28 +5,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Alsama brand accent (magenta/pink). #c12c68 is the 600 shade —
+        // the exact brand hex — used for primary actions, active states,
+        // and the malpractice/critical accent (per the Alsama style guide,
+        // both share this one accent rather than a separate danger color).
         brand: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          50: '#fdf1f6',
+          100: '#fbe0eb',
+          200: '#f6c1d6',
+          300: '#ec93b7',
+          400: '#dd5f93',
+          500: '#c8397a',
+          600: '#c12c68',
+          700: '#a12456',
+          800: '#841d47',
+          900: '#6b1a3c',
         },
-        malpractice: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-        },
+        ink: '#1f2a31',
+        muted: '#8b959d',
+        caption: '#97a1a9',
+        surface: '#ffffff',
+        page: '#fbfcfd',
+        border: '#d5dbe1',
+      },
+      borderColor: {
+        DEFAULT: '#d5dbe1',
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'Segoe UI', 'Tahoma', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        script: ['var(--font-script)', 'cursive'],
+      },
+      borderRadius: {
+        tile: '28px',
+        'tile-sm': '10px',
+      },
+      boxShadow: {
+        soft: '0 1px 4px rgba(0,0,0,0.08)',
       },
     },
   },

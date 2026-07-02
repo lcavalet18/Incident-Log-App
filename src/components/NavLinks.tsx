@@ -30,7 +30,7 @@ export function NavLinks({ role }: { role: UserRole }) {
             href={link.href}
             className={cn(
               'text-sm font-medium',
-              active ? 'text-brand-700' : 'text-slate-500 hover:text-slate-800'
+              active ? 'text-brand-600' : 'text-muted hover:text-ink'
             )}
           >
             {link.label}

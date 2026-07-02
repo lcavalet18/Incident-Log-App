@@ -65,7 +65,7 @@ export function FiltersBar({ exams, centers, incidentCodes, filters }: FiltersBa
           <label className="label">{t('dateFrom')}</label>
           <input
             type="date"
-            className="input"
+            className="input font-mono"
             defaultValue={filters.dateFrom ?? ''}
             onChange={(e) => update('from', e.target.value)}
           />
@@ -74,7 +74,7 @@ export function FiltersBar({ exams, centers, incidentCodes, filters }: FiltersBa
           <label className="label">{t('dateTo')}</label>
           <input
             type="date"
-            className="input"
+            className="input font-mono"
             defaultValue={filters.dateTo ?? ''}
             onChange={(e) => update('to', e.target.value)}
           />
@@ -86,7 +86,7 @@ export function FiltersBar({ exams, centers, incidentCodes, filters }: FiltersBa
           allLabel={t('allStatuses')}
           options={['draft', 'submitted', 'reviewed', 'closed'].map((s) => ({ value: s, label: s }))}
         />
-        <label className="flex items-center gap-2 self-end pb-2 text-sm text-slate-700">
+        <label className="flex items-center gap-2 self-end pb-2 text-sm text-ink">
           <input
             type="checkbox"
             checked={Boolean(filters.malpracticeOnly)}

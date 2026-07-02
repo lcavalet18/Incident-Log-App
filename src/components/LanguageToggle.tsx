@@ -24,8 +24,8 @@ export function LanguageToggle() {
           key={l}
           type="button"
           onClick={() => switchTo(l)}
-          className={`rounded px-2 py-1 text-xs font-semibold uppercase ${
-            l === locale ? 'bg-brand-600 text-white' : 'text-slate-500 hover:bg-slate-100'
+          className={`rounded-md px-2 py-1 font-mono text-xs font-semibold uppercase ${
+            l === locale ? 'bg-brand-600 text-white' : 'text-muted hover:bg-page'
           }`}
         >
           {l}

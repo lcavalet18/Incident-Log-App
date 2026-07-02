@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { StatusBadge } from '@/components/StatusBadge';
+import { cn } from '@/lib/utils';
 import type { IncidentStatus, IncidentWithRelations } from '@/types/database';
 
 interface IncidentDetailProps {
@@ -38,11 +39,11 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="font-mono text-xl font-bold text-ink">
             {incident.incident_reference ?? incident.id.slice(0, 8)}
           </h1>
-          <p className="text-sm text-slate-500">
-            {incident.centers?.name} · {incident.exam_date}
+          <p className="text-sm text-muted">
+            {incident.centers?.name} · <span className="font-mono">{incident.exam_date}</span>
           </p>
         </div>
         <StatusBadge status={incident.status} />
@@ -54,7 +55,7 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
             <Row label={tForm('center')} value={incident.centers?.name} />
             <Row label={tForm('roomNumber')} value={incident.room_number} />
             <Row label={tForm('exam')} value={incident.exams?.name} />
-            <Row label={tForm('examDate')} value={incident.exam_date} />
+            <Row label={tForm('examDate')} value={incident.exam_date} mono />
             <Row label={tForm('session')} value={incident.session} />
           </DetailCard>
 
@@ -62,19 +63,20 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
             <Row
               label={tForm('code')}
               value={incident.incident_codes ? `${incident.incident_codes.code} — ${incident.incident_codes.label}` : incident.code}
+              mono
             />
             <Row label={tForm('scope')} value={incident.scope} />
             {incident.incident_codes?.is_malpractice && (
-              <span className="badge bg-malpractice-100 text-malpractice-700">
+              <span className="badge bg-brand-100 text-brand-700">
                 {tCategory('Malpractice & Integrity')}
               </span>
             )}
           </DetailCard>
 
           <DetailCard title={tForm('sectionTiming')}>
-            <Row label={tForm('timeStarted')} value={formatTime(incident.time_started)} />
-            <Row label={tForm('timeResolved')} value={formatTime(incident.time_resolved)} />
-            <Row label={tForm('durationMinutes')} value={incident.duration_minutes?.toString()} />
+            <Row label={tForm('timeStarted')} value={formatTime(incident.time_started)} mono />
+            <Row label={tForm('timeResolved')} value={formatTime(incident.time_resolved)} mono />
+            <Row label={tForm('durationMinutes')} value={incident.duration_minutes?.toString()} mono />
           </DetailCard>
 
           <DetailCard title={tForm('sectionDescription')}>
@@ -82,20 +84,21 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
             <Row label={tForm('actionTaken')} value={incident.action_taken} block />
             <Row label={tForm('remedialAction')} value={incident.remedial_action} block />
             <Row label={tForm('remedialNotes')} value={incident.remedial_notes} block />
-            <Row label={tForm('questionsAffectedCount')} value={incident.questions_affected_count?.toString()} />
+            <Row label={tForm('questionsAffectedCount')} value={incident.questions_affected_count?.toString()} mono />
             <Row
               label={tForm('questionsAffectedList')}
               value={incident.questions_affected_list?.join(', ')}
+              mono
             />
           </DetailCard>
 
           {incident.incident_candidates.length > 0 && (
             <DetailCard title={t('candidates')}>
-              <ul className="divide-y divide-slate-100 text-sm">
+              <ul className="divide-y divide-border text-sm">
                 {incident.incident_candidates.map((c) => (
                   <li key={c.id} className="flex justify-between py-1.5">
                     <span>{c.student_name}</span>
-                    <span className="text-slate-500">{c.student_id}</span>
+                    <span className="font-mono text-muted">{c.student_id}</span>
                   </li>
                 ))}
               </ul>
@@ -125,7 +128,7 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
           <DetailCard title={tForm('sectionFollowUp')}>
             <Row label={tForm('supervisorName')} value={incident.supervisor_name} />
             <Row label={tForm('reportedToBoard')} value={incident.reported_to_board ? tCommon('yes') : tCommon('no')} />
-            <Row label={tForm('boardReferenceNo')} value={incident.board_reference_no} />
+            <Row label={tForm('boardReferenceNo')} value={incident.board_reference_no} mono />
             <Row label={tForm('followUpRequired')} value={incident.follow_up_required ? tCommon('yes') : tCommon('no')} />
             <Row label={tForm('followUpNotes')} value={incident.follow_up_notes} block />
             <Row label={t('reportedBy')} value={incident.profiles?.full_name} />
@@ -133,7 +136,7 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
         </div>
 
         <div className="card h-fit space-y-4">
-          <h2 className="font-semibold text-slate-800">{t('changeStatus')}</h2>
+          <h2 className="font-semibold text-ink">{t('changeStatus')}</h2>
           <select
             className="input"
             value={status}
@@ -161,26 +164,36 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
 function DetailCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card space-y-2">
-      <h2 className="font-semibold text-slate-800">{title}</h2>
+      <h2 className="font-semibold text-ink">{title}</h2>
       {children}
     </div>
   );
 }
 
-function Row({ label, value, block }: { label: string; value?: string | null; block?: boolean }) {
+function Row({
+  label,
+  value,
+  block,
+  mono,
+}: {
+  label: string;
+  value?: string | null;
+  block?: boolean;
+  mono?: boolean;
+}) {
   if (!value) return null;
   if (block) {
     return (
       <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
-        <p className="whitespace-pre-wrap text-sm text-slate-700">{value}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-caption">{label}</p>
+        <p className={cn('whitespace-pre-wrap text-sm text-ink', mono && 'font-mono')}>{value}</p>
       </div>
     );
   }
   return (
     <div className="flex justify-between text-sm">
-      <span className="text-slate-500">{label}</span>
-      <span className="font-medium text-slate-800">{value}</span>
+      <span className="text-muted">{label}</span>
+      <span className={cn('font-medium text-ink', mono && 'font-mono')}>{value}</span>
     </div>
   );
 }
