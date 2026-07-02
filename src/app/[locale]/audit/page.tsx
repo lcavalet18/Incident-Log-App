@@ -1,8 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireStaff } from '@/lib/auth';
-import { parseAuditFilters } from '@/lib/incidents/filters';
+import { parseAuditFilters, codesMatchingCategory } from '@/lib/incidents/filters';
 import { AuditFiltersBar } from '@/components/dashboard/AuditFiltersBar';
+import { AuditStats } from '@/components/dashboard/AuditStats';
 import { AuditTable } from '@/components/dashboard/AuditTable';
 import { ExportButton } from '@/components/dashboard/ExportButton';
 import type { IncidentAuditRow } from '@/types/database';
@@ -18,8 +19,23 @@ export default async function AuditPage({
   const supabase = createClient();
   const filters = parseAuditFilters(searchParams);
   const t = await getTranslations('audit');
+  const tCategory = await getTranslations('category');
 
-  const { data: exams } = await supabase.from('exams').select('id, name').order('name');
+  const [{ data: centers }, { data: exams }, { data: incidentCodes }, { count: totalCount }] = await Promise.all([
+    supabase.from('centers').select('id, name').order('name'),
+    supabase.from('exams').select('id, name').order('name'),
+    supabase.from('incident_codes').select('code, category').order('category'),
+    supabase.from('incidents').select('id', { count: 'exact', head: true }).in('status', [
+      'submitted',
+      'reviewed',
+      'closed',
+    ]),
+  ]);
+
+  const categories = Array.from(new Set((incidentCodes ?? []).map((c) => c.category))).map((cat) => ({
+    value: cat,
+    label: tCategory(cat as never),
+  }));
 
   let query = supabase
     .from('incidents')
@@ -29,43 +45,48 @@ export default async function AuditPage({
     .in('status', ['submitted', 'reviewed', 'closed'])
     .order('created_at', { ascending: false });
 
-  if (filters.examId) query = query.eq('exam_id', filters.examId);
+  if (filters.centerId) query = query.eq('center_id', filters.centerId);
   if (filters.examCycle) query = query.eq('exam_cycle', filters.examCycle);
+  if (filters.examId) query = query.eq('exam_id', filters.examId);
+  if (filters.status) query = query.eq('status', filters.status);
+
+  const codeAllowlist = codesMatchingCategory(incidentCodes ?? [], filters.category);
+  if (codeAllowlist) query = query.in('code', codeAllowlist.length > 0 ? codeAllowlist : ['__none__']);
 
   if (filters.search) {
     const term = `%${filters.search}%`;
-    query = query.or(
-      `incident_reference.ilike.${term},description.ilike.${term},action_taken.ilike.${term},room_number.ilike.${term},supervisor_name.ilike.${term}`
-    );
-  }
-
-  if (filters.student) {
-    const term = `%${filters.student}%`;
     const { data: matches } = await supabase
       .from('incident_candidates')
       .select('incident_id')
       .or(`student_name.ilike.${term},student_email.ilike.${term},student_id.ilike.${term}`);
 
-    const incidentIds = Array.from(new Set((matches ?? []).map((m) => m.incident_id)));
-    query = query.in('id', incidentIds.length > 0 ? incidentIds : ['__none__']);
+    const candidateIncidentIds = Array.from(new Set((matches ?? []).map((m) => m.incident_id)));
+    const idFilter =
+      candidateIncidentIds.length > 0 ? `id.in.(${candidateIncidentIds.join(',')}),` : '';
+    query = query.or(`${idFilter}incident_reference.ilike.${term},action_taken.ilike.${term}`);
   }
 
   const { data } = await query;
   const incidents = (data ?? []) as unknown as IncidentAuditRow[];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <div className="mb-[22px] flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-ink">{t('title')}</h1>
-          <p className="text-sm text-muted">{t('subtitle')}</p>
+          <div className="mb-1.5 text-xs font-semibold uppercase tracking-[.09em] text-brand-600">
+            {t('eyebrow')}
+          </div>
+          <h1 className="m-0 text-[27px] font-bold tracking-[-.02em] text-ink">{t('title')}</h1>
+          <p className="mt-2 text-[14.5px] text-muted">{t('subtitle')}</p>
         </div>
         <ExportButton incidents={incidents} />
       </div>
 
-      <AuditFiltersBar exams={exams ?? []} filters={filters} />
+      <AuditStats incidents={incidents} />
 
-      <AuditTable incidents={incidents} />
+      <AuditFiltersBar centers={centers ?? []} exams={exams ?? []} categories={categories} filters={filters} />
+
+      <AuditTable incidents={incidents} totalCount={totalCount ?? incidents.length} />
     </div>
   );
 }

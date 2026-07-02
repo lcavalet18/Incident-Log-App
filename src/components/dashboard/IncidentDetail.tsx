@@ -16,7 +16,7 @@ interface IncidentDetailProps {
 const STATUSES: IncidentStatus[] = ['draft', 'submitted', 'reviewed', 'closed'];
 
 export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetailProps) {
-  const t = useTranslations('dashboard.detail');
+  const t = useTranslations('incidentDetail');
   const tForm = useTranslations('incidentForm');
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
@@ -26,6 +26,8 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
   const [status, setStatus] = useState<IncidentStatus>(incident.status);
   const [notes, setNotes] = useState(incident.supervisor_notes ?? '');
   const [saving, setSaving] = useState(false);
+
+  const candidate = incident.incident_candidates[0];
 
   async function handleSave() {
     setSaving(true);
@@ -53,38 +55,39 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
         <div className="space-y-6 lg:col-span-2">
           <DetailCard title={tForm('sectionContext')}>
             <Row label={tForm('center')} value={incident.centers?.name} />
-            <Row label={tForm('roomNumber')} value={incident.room_number} />
-            <Row label={tForm('exam')} value={incident.exams?.name} />
             <Row label={tForm('examCycle')} value={incident.exam_cycle} mono />
             <Row label={tForm('examDate')} value={incident.exam_date} mono />
-            <Row label={tForm('session')} value={incident.session} />
+            <Row label={tForm('exam')} value={incident.exams?.name} />
           </DetailCard>
 
-          <DetailCard title={tForm('sectionClassification')}>
+          <DetailCard title={tForm('sectionIssue')}>
             <Row
-              label={tForm('code')}
-              value={incident.incident_codes ? `${incident.incident_codes.code} — ${incident.incident_codes.label}` : incident.code}
-              mono
+              label={tForm('categoryField')}
+              value={incident.incident_codes ? tCategory(incident.incident_codes.category as never) : undefined}
             />
-            <Row label={tForm('scope')} value={incident.scope} />
+            <Row label={tForm('issue')} value={incident.incident_codes?.label} />
+            <Row label={tForm('code')} value={incident.code} mono />
             {incident.incident_codes?.is_malpractice && (
-              <span className="badge bg-brand-100 text-brand-700">
-                {tCategory('Malpractice & Integrity')}
-              </span>
+              <span className="badge bg-brand-600 text-white">{tCategory('Malpractice & Integrity')}</span>
             )}
           </DetailCard>
+
+          {candidate && (
+            <DetailCard title={t('candidates')}>
+              <Row label={tForm('studentName')} value={candidate.student_name} />
+              <Row label={tForm('studentEmail')} value={candidate.student_email} />
+              <Row label={tForm('code')} value={candidate.student_id} mono />
+            </DetailCard>
+          )}
 
           <DetailCard title={tForm('sectionTiming')}>
             <Row label={tForm('timeStarted')} value={formatTime(incident.time_started)} mono />
             <Row label={tForm('timeResolved')} value={formatTime(incident.time_resolved)} mono />
-            <Row label={tForm('durationMinutes')} value={incident.duration_minutes?.toString()} mono />
+            <Row label={tCommon('duration')} value={incident.duration_minutes?.toString()} mono />
           </DetailCard>
 
-          <DetailCard title={tForm('sectionDescription')}>
-            <Row label={tForm('description')} value={incident.description} block />
+          <DetailCard title={tForm('sectionResolution')}>
             <Row label={tForm('actionTaken')} value={incident.action_taken} block />
-            <Row label={tForm('remedialAction')} value={incident.remedial_action} block />
-            <Row label={tForm('remedialNotes')} value={incident.remedial_notes} block />
             <Row label={tForm('questionsAffectedCount')} value={incident.questions_affected_count?.toString()} mono />
             <Row
               label={tForm('questionsAffectedList')}
@@ -92,29 +95,6 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
               mono
             />
           </DetailCard>
-
-          {incident.incident_candidates.length > 0 && (
-            <DetailCard title={t('candidates')}>
-              <ul className="divide-y divide-border text-sm">
-                {incident.incident_candidates.map((c) => (
-                  <li key={c.id} className="flex flex-wrap items-center justify-between gap-x-4 py-1.5">
-                    <span>
-                      {c.student_name}
-                      {c.student_email && <span className="text-muted"> · {c.student_email}</span>}
-                    </span>
-                    <span className="font-mono text-muted">{c.student_id}</span>
-                  </li>
-                ))}
-              </ul>
-            </DetailCard>
-          )}
-
-          {incident.incident_codes?.is_malpractice && (
-            <DetailCard title={tForm('sectionMalpractice')}>
-              <Row label={tForm('witnesses')} value={incident.witnesses} block />
-              <Row label={tForm('evidenceConfiscated')} value={incident.evidence_confiscated ? tCommon('yes') : tCommon('no')} />
-            </DetailCard>
-          )}
 
           {signedAttachmentUrl && (
             <DetailCard title={t('evidence')}>
@@ -129,14 +109,11 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
             </DetailCard>
           )}
 
-          <DetailCard title={tForm('sectionFollowUp')}>
-            <Row label={tForm('supervisorName')} value={incident.supervisor_name} />
-            <Row label={tForm('reportedToBoard')} value={incident.reported_to_board ? tCommon('yes') : tCommon('no')} />
-            <Row label={tForm('boardReferenceNo')} value={incident.board_reference_no} mono />
-            <Row label={tForm('followUpRequired')} value={incident.follow_up_required ? tCommon('yes') : tCommon('no')} />
-            <Row label={tForm('followUpNotes')} value={incident.follow_up_notes} block />
-            <Row label={t('reportedBy')} value={incident.profiles?.full_name} />
-          </DetailCard>
+          {incident.profiles?.full_name && (
+            <p className="text-sm text-muted">
+              {t('reportedBy')}: <span className="font-medium text-ink">{incident.profiles.full_name}</span>
+            </p>
+          )}
         </div>
 
         <div className="card h-fit space-y-4">

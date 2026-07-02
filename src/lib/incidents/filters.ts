@@ -1,40 +1,11 @@
-import type { ExamCycle, IncidentCode } from '@/types/database';
-
-export interface DashboardFilters {
-  examId?: string;
-  examCycle?: ExamCycle;
-  centerId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  category?: string;
-  code?: string;
-  status?: string;
-  malpracticeOnly?: boolean;
-}
-
-export function parseFilters(searchParams: Record<string, string | string[] | undefined>): DashboardFilters {
-  const get = (key: string) => {
-    const v = searchParams[key];
-    return Array.isArray(v) ? v[0] : v;
-  };
-
-  return {
-    examId: get('exam') || undefined,
-    examCycle: (get('cycle') || undefined) as ExamCycle | undefined,
-    centerId: get('center') || undefined,
-    dateFrom: get('from') || undefined,
-    dateTo: get('to') || undefined,
-    category: get('category') || undefined,
-    code: get('code') || undefined,
-    status: get('status') || undefined,
-    malpracticeOnly: get('malpractice') === '1',
-  };
-}
+import type { ExamCycle, IncidentCode, IncidentStatus } from '@/types/database';
 
 export interface AuditFilters {
-  examId?: string;
+  centerId?: string;
   examCycle?: ExamCycle;
-  student?: string;
+  examId?: string;
+  category?: string;
+  status?: IncidentStatus;
   search?: string;
 }
 
@@ -45,25 +16,20 @@ export function parseAuditFilters(searchParams: Record<string, string | string[]
   };
 
   return {
-    examId: get('exam') || undefined,
+    centerId: get('center') || undefined,
     examCycle: (get('cycle') || undefined) as ExamCycle | undefined,
-    student: get('student') || undefined,
+    examId: get('exam') || undefined,
+    category: get('category') || undefined,
+    status: (get('status') || undefined) as IncidentStatus | undefined,
     search: get('q') || undefined,
   };
 }
 
-/** Resolves category/malpractice filters against the (small, fully-loaded) code list into a concrete code allowlist. */
-export function codesMatchingFilters(
-  incidentCodes: Pick<IncidentCode, 'code' | 'category' | 'is_malpractice'>[],
-  filters: Pick<DashboardFilters, 'category' | 'malpracticeOnly'>
+/** Resolves a category filter against the (small, fully-loaded) code list into a concrete code allowlist. */
+export function codesMatchingCategory(
+  incidentCodes: Pick<IncidentCode, 'code' | 'category'>[],
+  category: string | undefined
 ): string[] | null {
-  if (!filters.category && !filters.malpracticeOnly) return null;
-
-  return incidentCodes
-    .filter(
-      (c) =>
-        (!filters.category || c.category === filters.category) &&
-        (!filters.malpracticeOnly || c.is_malpractice)
-    )
-    .map((c) => c.code);
+  if (!category) return null;
+  return incidentCodes.filter((c) => c.category === category).map((c) => c.code);
 }

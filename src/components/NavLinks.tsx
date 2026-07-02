@@ -12,7 +12,6 @@ export function NavLinks({ role }: { role: UserRole }) {
 
   const links = isStaff
     ? [
-        { href: '/dashboard', label: t('dashboard') },
         { href: '/audit', label: t('audit') },
         { href: '/admin/codes', label: t('codeList') },
       ]
@@ -22,7 +21,7 @@ export function NavLinks({ role }: { role: UserRole }) {
       ];
 
   return (
-    <nav className="flex gap-4">
+    <nav className="ms-2 flex gap-1">
       {links.map((link) => {
         const active = pathname?.includes(link.href);
         return (
@@ -30,8 +29,8 @@ export function NavLinks({ role }: { role: UserRole }) {
             key={link.href}
             href={link.href}
             className={cn(
-              'text-sm font-medium',
-              active ? 'text-brand-600' : 'text-muted hover:text-ink'
+              'rounded-[7px] px-[15px] py-2 text-sm font-semibold transition-colors',
+              active ? 'bg-brand-50 text-brand-600' : 'text-secondary hover:bg-mist'
             )}
           >
             {link.label}

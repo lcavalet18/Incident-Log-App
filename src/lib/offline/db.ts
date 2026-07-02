@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { ExamCycle } from '@/types/database';
+import type { ExamCycle, IncidentStatus } from '@/types/database';
 
 export interface QueuedCandidate {
   student_name: string;
@@ -26,7 +26,7 @@ export interface QueuedIncidentPayload {
   remedial_notes: string | null;
   questions_affected_count: number | null;
   questions_affected_list: number[] | null;
-  status: 'draft' | 'submitted';
+  status: IncidentStatus;
   reported_to_board: boolean;
   board_reference_no: string | null;
   follow_up_required: boolean;

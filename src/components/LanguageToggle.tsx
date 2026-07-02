@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { locales } from '@/i18n/config';
+import { cn } from '@/lib/utils';
 
 export function LanguageToggle() {
   const locale = useLocale();
@@ -18,15 +19,16 @@ export function LanguageToggle() {
   }
 
   return (
-    <div className="flex items-center gap-1" aria-label={t('language')}>
+    <div className="flex overflow-hidden rounded-md border border-border" aria-label={t('language')}>
       {locales.map((l) => (
         <button
           key={l}
           type="button"
           onClick={() => switchTo(l)}
-          className={`rounded-md px-2 py-1 font-mono text-xs font-semibold uppercase ${
-            l === locale ? 'bg-brand-600 text-white' : 'text-muted hover:bg-page'
-          }`}
+          className={cn(
+            'px-[11px] py-[6px] text-[12.5px] font-semibold uppercase',
+            l === locale ? 'bg-brand-600 text-white' : 'bg-surface text-muted'
+          )}
         >
           {l}
         </button>

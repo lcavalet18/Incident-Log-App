@@ -42,7 +42,7 @@ export function LoginForm() {
 
     const isStaff = profile?.role === 'admin' || profile?.role === 'supervisor';
     const next = searchParams.get('next');
-    router.push(next ?? (isStaff ? '/dashboard' : '/incidents'));
+    router.push(next ?? (isStaff ? '/audit' : '/incidents'));
     router.refresh();
   }
 

@@ -13,7 +13,7 @@ function formatTime(iso: string | null): string {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-export function AuditTable({ incidents }: { incidents: IncidentAuditRow[] }) {
+export function AuditTable({ incidents, totalCount }: { incidents: IncidentAuditRow[]; totalCount: number }) {
   const t = useTranslations('audit');
   const tTable = useTranslations('audit.table');
 
@@ -22,78 +22,130 @@ export function AuditTable({ incidents }: { incidents: IncidentAuditRow[] }) {
   }
 
   return (
-    <div className="card overflow-x-auto p-0">
-      <table className="w-full min-w-[1600px] text-sm">
-        <thead className="border-b border-border bg-page text-start text-xs uppercase tracking-wide text-muted">
-          <tr>
-            {[
-              tTable('reference'),
-              tTable('examCycle'),
-              tTable('exam'),
-              tTable('date'),
-              tTable('center'),
-              tTable('category'),
-              tTable('code'),
-              tTable('issue'),
-              tTable('status'),
-              tTable('malpractice'),
-              tTable('students'),
-              tTable('studentIds'),
-              tTable('timeStarted'),
-              tTable('timeResolved'),
-              tTable('duration'),
-              tTable('actionTaken'),
-              tTable('invigilator'),
-            ].map((h) => (
-              <th key={h} className="px-4 py-3 text-start font-medium">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {incidents.map((incident) => (
-            <tr key={incident.id} className="hover:bg-page">
-              <td className="px-4 py-4">
-                <Link
-                  href={`/dashboard/${incident.id}`}
-                  className="font-mono font-medium text-brand-700 hover:underline"
+    <div className="overflow-hidden rounded-[10px] border border-border bg-surface shadow-[0_1px_2px_rgba(31,42,49,.04)]">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[1600px] text-[13px]">
+          <thead>
+            <tr className="border-b border-border bg-[#f8fafb]">
+              {[
+                tTable('reference'),
+                tTable('center'),
+                tTable('examCycle'),
+                tTable('exam'),
+                tTable('category'),
+                tTable('issue'),
+                tTable('code'),
+                tTable('studentName'),
+                tTable('studentEmail'),
+                tTable('studentId'),
+                tTable('timeStarted'),
+                tTable('timeResolved'),
+                tTable('duration'),
+                tTable('actionTaken'),
+                tTable('status'),
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="whitespace-nowrap px-3.5 py-[11px] text-start text-[11px] font-semibold uppercase tracking-[.04em] text-muted"
                 >
-                  {incident.incident_reference ?? incident.id.slice(0, 8)}
-                </Link>
-              </td>
-              <td className="px-4 py-4 font-mono">{incident.exam_cycle ?? '—'}</td>
-              <td className="px-4 py-4">{incident.exams?.name ?? '—'}</td>
-              <td className="px-4 py-4 font-mono">{incident.exam_date ?? '—'}</td>
-              <td className="px-4 py-4">{incident.centers?.name ?? '—'}</td>
-              <td className="px-4 py-4">{incident.incident_codes?.category ?? '—'}</td>
-              <td className="px-4 py-4 font-mono">{incident.code ?? '—'}</td>
-              <td className="px-4 py-4">{incident.incident_codes?.label ?? '—'}</td>
-              <td className="px-4 py-4">
-                <StatusBadge status={incident.status} />
-              </td>
-              <td className="px-4 py-4">
-                {incident.incident_codes?.is_malpractice && (
-                  <span className={cn('badge', 'bg-brand-100 text-brand-700')}>!</span>
-                )}
-              </td>
-              <td className="px-4 py-4">
-                {incident.incident_candidates.map((c) => c.student_name).join('; ') || '—'}
-              </td>
-              <td className="px-4 py-4 font-mono">
-                {incident.incident_candidates.map((c) => c.student_id).filter(Boolean).join('; ') || '—'}
-              </td>
-              <td className="px-4 py-4 font-mono">{formatTime(incident.time_started)}</td>
-              <td className="px-4 py-4 font-mono">{formatTime(incident.time_resolved)}</td>
-              <td className="px-4 py-4 font-mono">{incident.duration_minutes ?? '—'}</td>
-              <td className="max-w-xs truncate px-4 py-4" title={incident.action_taken ?? ''}>
-                {incident.action_taken ?? '—'}
-              </td>
-              <td className="px-4 py-4">{incident.profiles?.full_name ?? '—'}</td>
+                  {h}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {incidents.map((incident) => {
+              const mal = incident.incident_codes?.is_malpractice ?? false;
+              const candidate = incident.incident_candidates[0];
+              return (
+                <tr
+                  key={incident.id}
+                  className={cn('border-b border-divider', mal ? 'bg-brand-600/[0.045]' : 'bg-surface')}
+                >
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top font-mono text-[12.5px] font-medium text-ink">
+                    <Link href={`/dashboard/${incident.id}`} className="hover:underline">
+                      {incident.incident_reference ?? incident.id.slice(0, 8)}
+                    </Link>
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top text-ink">
+                    {incident.centers?.name ?? '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top font-mono text-xs text-secondary">
+                    {incident.exam_cycle ?? '—'}
+                  </td>
+                  <td className="min-w-[150px] px-3.5 py-[13px] align-top text-ink">{incident.exams?.name ?? '—'}</td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top">
+                    {incident.incident_codes ? (
+                      <span
+                        className={
+                          mal
+                            ? 'inline-block whitespace-nowrap rounded-full bg-brand-600 px-2.5 py-[3px] text-[11.5px] font-semibold text-white'
+                            : 'text-[13px] text-secondary'
+                        }
+                      >
+                        {incident.incident_codes.category}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top text-ink">
+                    {incident.incident_codes?.label ?? '—'}
+                  </td>
+                  <td className="px-3.5 py-[13px] align-top">
+                    <span
+                      className={cn(
+                        'rounded-[5px] px-[7px] py-[2px] font-mono text-xs font-semibold tracking-[.03em]',
+                        mal ? 'bg-brand-50 text-brand-600' : 'bg-neutral-bg text-secondary'
+                      )}
+                    >
+                      {incident.code ?? '—'}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top text-ink">
+                    {candidate?.student_name ?? '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top text-[12.5px] text-secondary">
+                    {candidate?.student_email ?? '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top font-mono text-xs text-secondary">
+                    {candidate?.student_id ?? '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top font-mono text-[12.5px] text-ink">
+                    {formatTime(incident.time_started)}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top font-mono text-[12.5px] text-ink">
+                    {formatTime(incident.time_resolved)}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top font-mono text-[12.5px] font-medium text-ink">
+                    {incident.duration_minutes != null ? `${incident.duration_minutes} min` : '—'}
+                  </td>
+                  <td className="min-w-[220px] px-3.5 py-[13px] align-top text-[12.5px] leading-[1.45] text-secondary">
+                    {incident.action_taken ?? '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top">
+                    <StatusBadge status={incident.status} />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex items-center justify-between border-t border-divider bg-page px-4 py-3">
+        <span className="text-[12.5px] text-muted">
+          {t.rich('showing', {
+            shown: incidents.length,
+            total: totalCount,
+            b: (chunks) => <strong className="font-mono font-semibold text-secondary">{chunks}</strong>,
+            m: (chunks) => <span className="font-mono">{chunks}</span>,
+          })}
+        </span>
+        <span className="flex items-center gap-[7px] text-xs text-muted">
+          <span className="inline-block h-[9px] w-[9px] rounded-sm bg-brand-600" />
+          {t('malpracticeLegend')}
+        </span>
+      </div>
     </div>
   );
 }

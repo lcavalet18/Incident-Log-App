@@ -5,10 +5,10 @@ import type { IncidentStatus } from '@/types/database';
 import { cn } from '@/lib/utils';
 
 const COLORS: Record<IncidentStatus, string> = {
-  draft: 'bg-page text-muted ring-1 ring-inset ring-border',
-  submitted: 'bg-brand-50 text-brand-700',
-  reviewed: 'bg-ink/10 text-ink',
-  closed: 'bg-border text-ink',
+  draft: 'bg-neutral-bg text-muted',
+  submitted: 'bg-brand-50 text-brand-600',
+  reviewed: 'bg-success-bg text-success',
+  closed: 'bg-neutral-bg text-secondary',
 };
 
 export function StatusBadge({ status }: { status: IncidentStatus }) {

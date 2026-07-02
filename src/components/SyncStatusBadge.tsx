@@ -20,14 +20,14 @@ export function SyncStatusBadge() {
 
   if (pendingCount === 0) {
     return (
-      <span
-        className={cn(
-          'badge font-mono',
-          isOnline ? 'bg-page text-muted ring-1 ring-inset ring-border' : 'bg-border text-ink'
-        )}
-      >
-        <span className={cn('h-1.5 w-1.5 rounded-full', isOnline ? 'bg-muted' : 'bg-ink')} />
-        {isOnline ? t('online') : t('offline')}
+      <span className="flex items-center gap-[7px]">
+        <span
+          className={cn(
+            'h-2 w-2 rounded-full',
+            isOnline ? 'bg-online shadow-[0_0_0_3px_rgba(47,158,107,.16)]' : 'bg-faint'
+          )}
+        />
+        <span className="text-[13px] font-medium text-secondary">{isOnline ? t('online') : t('offline')}</span>
       </span>
     );
   }
