@@ -73,6 +73,10 @@
     "Malpractice & Integrity": "الغش والنزاهة",
     "Other": "أخرى"
   },
+  "scope": {
+    "individual": "فردي",
+    "group": "على مستوى القاعة"
+  },
   "incidentForm": {
     "eyebrow": "حادثة جديدة",
     "title": "الإبلاغ عن حادثة امتحان",
@@ -97,7 +101,12 @@
     "issueHint": "— مصفاة حسب الفئة",
     "issuePlaceholder": "اختر المشكلة…",
     "issuePlaceholderNoCategory": "اختر الفئة أولاً",
-    "descriptionRequiredOther": "الوصف مطلوب عند اختيار مشكلة \"أخرى\".",
+    "issueDescription": "وصف المشكلة",
+    "issueDescriptionPlaceholder": "صف المشكلة…",
+    "whoAffected": "من تأثر بهذه الحادثة؟",
+    "affectStudent": "طالب محدد",
+    "affectRoom": "على مستوى القاعة / عدة طلاب",
+    "roomWideNote": "تؤثر هذه الحادثة على عدة طلاب — لا حاجة لتفاصيل طالب فردي.",
     "studentName": "اسم الطالب",
     "studentNamePlaceholder": "مثال: ليلى حداد",
     "studentEmail": "البريد الإلكتروني للطالب",
@@ -112,14 +121,13 @@
     "questionsAffectedCount": "الأسئلة المتأثرة",
     "questionsAffectedList": "أي الأسئلة",
     "questionsAffectedListPlaceholder": "مثال: Q4, Q5, Q6",
-    "status": "حالة المشكلة",
     "submitIncident": "إرسال الحادثة",
     "saveAsDraft": "حفظ كمسودة",
     "auditHint": "سيضيف إرسال هذا التقرير صفًا إلى سجل التدقيق.",
     "submitSuccess": "تم إرسال تقرير الحادثة.",
     "draftSaved": "تم حفظ المسودة.",
     "queuedOffline": "أنت غير متصل بالإنترنت. تم وضع هذا التقرير في قائمة الانتظار وستتم مزامنته تلقائيًا.",
-    "validationError": "يرجى استكمال المركز والمادة والفئة والمشكلة واسم الطالب.",
+    "requiredFieldsError": "يرجى استكمال جميع الحقول المطلوبة (*).",
     "confirmDelete": "هل تريد حذف هذه المسودة؟"
   },
   "myReports": {
@@ -135,6 +143,7 @@
     "evidence": "مرفق الدليل",
     "viewAttachment": "عرض المرفق",
     "candidates": "المترشح",
+    "scope": "النطاق",
     "reportedBy": "أبلغ عنها"
   },
   "audit": {
@@ -171,7 +180,9 @@
       "examCycle": "الدورة",
       "exam": "المادة",
       "category": "الفئة",
+      "scope": "النطاق",
       "issue": "المشكلة",
+      "issueDescription": "وصف المشكلة",
       "code": "الرمز",
       "studentName": "اسم الطالب",
       "studentEmail": "البريد الإلكتروني للطالب",

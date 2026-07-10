@@ -28,16 +28,25 @@ export async function enqueueIncident(
 /**
  * Pushes every queued incident to Supabase, one at a time. Safe to call
  * repeatedly/concurrently: a module-level lock skips overlapping runs, and
- * each incident is looked up by `client_generated_id` before insert so a
- * retry after a partial failure (e.g. the incident row landed but its
- * candidate row didn't) never creates a duplicate row.
+ * each incident is looked up by `client_generated_id` first so a retry
+ * after a partial failure never creates a duplicate row.
  *
- * Deliberately NOT an upsert: once an incident is created its RLS update
+ * Deliberately NOT an upsert: once an incident is created, its RLS update
  * policy only allows a non-staff editor to touch it while it's still a
  * draft, and most reports are filed straight to "submitted" or later. An
- * upsert's ON CONFLICT DO UPDATE arm would then be rejected by RLS on
- * every retry (a new failure mode), so retries look up the existing row
- * and only insert what's still missing instead of re-writing it.
+ * upsert's ON CONFLICT DO UPDATE arm would then be rejected by RLS on a
+ * background retry of an already-submitted report (a new failure mode).
+ *
+ * When a row already exists (editing a draft, or retrying a partial
+ * failure), candidates are replaced *before* the incidents row update:
+ * editing a draft can promote its status straight to "submitted" in the
+ * same request, and incident_candidates writes are only permitted while
+ * the parent incident is still a draft for non-staff -- doing it in this
+ * order means the candidate replace still sees the pre-update status.
+ * The incidents update itself is a plain UPDATE (not upsert), so if the
+ * row already left "draft" and nothing actually changed (a background
+ * retry, not a user edit), RLS just leaves it as a harmless no-op instead
+ * of erroring.
  */
 export async function syncQueue(): Promise<void> {
   if (syncInFlight) return;
@@ -75,9 +84,35 @@ export async function syncQueue(): Promise<void> {
 
         if (lookupError) throw lookupError;
 
-        let incidentRow: { id: string };
+        let incidentId: string;
+
         if (existingIncident) {
-          incidentRow = existingIncident;
+          incidentId = existingIncident.id;
+
+          // Replace candidates first, while the row's *current* status
+          // (still 'draft' if this is a draft edit) still permits it.
+          const { error: deleteError } = await supabase
+            .from('incident_candidates')
+            .delete()
+            .eq('incident_id', incidentId);
+          if (deleteError) throw deleteError;
+
+          if (item.candidates.length > 0) {
+            const { error: candidatesError } = await supabase.from('incident_candidates').insert(
+              item.candidates.map((c) => ({
+                incident_id: incidentId,
+                student_name: c.student_name,
+                student_email: c.student_email,
+              }))
+            );
+            if (candidatesError) throw candidatesError;
+          }
+
+          const { error: updateError } = await supabase
+            .from('incidents')
+            .update({ ...item.payload, attachment_url: attachmentPath })
+            .eq('id', incidentId);
+          if (updateError) throw updateError;
         } else {
           const { data: inserted, error: incidentError } = await supabase
             .from('incidents')
@@ -89,24 +124,18 @@ export async function syncQueue(): Promise<void> {
             .single();
 
           if (incidentError) throw incidentError;
-          incidentRow = inserted;
-        }
+          incidentId = inserted.id;
 
-        if (item.candidates.length > 0) {
-          const { error: deleteError } = await supabase
-            .from('incident_candidates')
-            .delete()
-            .eq('incident_id', incidentRow.id);
-          if (deleteError) throw deleteError;
-
-          const { error: candidatesError } = await supabase.from('incident_candidates').insert(
-            item.candidates.map((c) => ({
-              incident_id: incidentRow.id,
-              student_name: c.student_name,
-              student_email: c.student_email,
-            }))
-          );
-          if (candidatesError) throw candidatesError;
+          if (item.candidates.length > 0) {
+            const { error: candidatesError } = await supabase.from('incident_candidates').insert(
+              item.candidates.map((c) => ({
+                incident_id: incidentId,
+                student_name: c.student_name,
+                student_email: c.student_email,
+              }))
+            );
+            if (candidatesError) throw candidatesError;
+          }
         }
 
         await offlineDb.queuedIncidents.delete(item.id);

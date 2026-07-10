@@ -63,6 +63,8 @@ export interface Incident {
   time_resolved: string | null;
   duration_minutes: number | null;
   description: string | null;
+  /** Required detail when the chosen issue is the "Other" category's catch-all code. */
+  issue_description: string | null;
   action_taken: string | null;
   remedial_action: string | null;
   remedial_notes: string | null;

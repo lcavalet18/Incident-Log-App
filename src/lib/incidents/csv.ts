@@ -1,4 +1,7 @@
+import { formatIssueText } from './format';
 import type { IncidentAuditRow } from '@/types/database';
+
+const SCOPE_LABELS: Record<string, string> = { individual: 'Individual', group: 'Room-wide' };
 
 const COLUMNS: { header: string; get: (i: IncidentAuditRow) => string }[] = [
   { header: 'Reference', get: (i) => i.incident_reference ?? '' },
@@ -7,7 +10,9 @@ const COLUMNS: { header: string; get: (i: IncidentAuditRow) => string }[] = [
   { header: 'Exam Date', get: (i) => i.exam_date ?? '' },
   { header: 'Partner Center', get: (i) => i.centers?.name ?? '' },
   { header: 'Category', get: (i) => i.incident_codes?.category ?? '' },
-  { header: 'Issue', get: (i) => i.incident_codes?.label ?? '' },
+  { header: 'Scope', get: (i) => (i.scope ? SCOPE_LABELS[i.scope] ?? i.scope : '') },
+  { header: 'Issue', get: (i) => formatIssueText(i) },
+  { header: 'Issue Description', get: (i) => i.issue_description ?? '' },
   { header: 'Code', get: (i) => i.code ?? '' },
   { header: 'Student Name', get: (i) => i.incident_candidates[0]?.student_name ?? '' },
   { header: 'Student Email', get: (i) => i.incident_candidates[0]?.student_email ?? '' },

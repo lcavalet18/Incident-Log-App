@@ -73,6 +73,10 @@
     "Malpractice & Integrity": "Malpractice & Integrity",
     "Other": "Other"
   },
+  "scope": {
+    "individual": "Individual",
+    "group": "Room-wide"
+  },
   "incidentForm": {
     "eyebrow": "New Incident",
     "title": "File an exam incident",
@@ -97,7 +101,12 @@
     "issueHint": "— filtered by category",
     "issuePlaceholder": "Select an issue…",
     "issuePlaceholderNoCategory": "Select a category first",
-    "descriptionRequiredOther": "Description is required when the issue is \"Other\".",
+    "issueDescription": "Issue description",
+    "issueDescriptionPlaceholder": "Describe the issue…",
+    "whoAffected": "Who did this affect?",
+    "affectStudent": "A specific student",
+    "affectRoom": "Room-wide / multiple students",
+    "roomWideNote": "This incident affects multiple students — no individual student details needed.",
     "studentName": "Student Name",
     "studentNamePlaceholder": "e.g. Layla Haddad",
     "studentEmail": "Student Email",
@@ -112,14 +121,13 @@
     "questionsAffectedCount": "Questions affected",
     "questionsAffectedList": "Which questions",
     "questionsAffectedListPlaceholder": "e.g. Q4, Q5, Q6",
-    "status": "Status of the issue",
     "submitIncident": "Submit Incident",
     "saveAsDraft": "Save as draft",
     "auditHint": "Filing this adds a row to the Audit log.",
     "submitSuccess": "Incident report submitted.",
     "draftSaved": "Draft saved.",
     "queuedOffline": "You're offline. This report has been queued and will sync automatically.",
-    "validationError": "Please complete center, subject, category, issue and student name.",
+    "requiredFieldsError": "Please complete all required (*) fields.",
     "confirmDelete": "Delete this draft report?"
   },
   "myReports": {
@@ -135,6 +143,7 @@
     "evidence": "Evidence attachment",
     "viewAttachment": "View attachment",
     "candidates": "Candidate",
+    "scope": "Scope",
     "reportedBy": "Reported by"
   },
   "audit": {
@@ -171,7 +180,9 @@
       "examCycle": "Cycle",
       "exam": "Subject",
       "category": "Category",
+      "scope": "Scope",
       "issue": "Issue",
+      "issueDescription": "Issue Description",
       "code": "Code",
       "studentName": "Student Name",
       "studentEmail": "Student Email",

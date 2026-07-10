@@ -21,6 +21,7 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
   const tCategory = useTranslations('category');
+  const tScope = useTranslations('scope');
   const router = useRouter();
 
   const [status, setStatus] = useState<IncidentStatus>(incident.status);
@@ -67,18 +68,24 @@ export function IncidentDetail({ incident, signedAttachmentUrl }: IncidentDetail
             />
             <Row label={tForm('issue')} value={incident.incident_codes?.label} />
             <Row label={tForm('code')} value={incident.code} mono />
+            <Row label={tForm('issueDescription')} value={incident.issue_description} block />
             {incident.incident_codes?.is_malpractice && (
               <span className="badge bg-brand-600 text-white">{tCategory('Malpractice & Integrity')}</span>
             )}
           </DetailCard>
 
-          {candidate && (
-            <DetailCard title={t('candidates')}>
-              <Row label={tForm('studentName')} value={candidate.student_name} />
-              <Row label={tForm('studentEmail')} value={candidate.student_email} />
-              <Row label={tForm('code')} value={candidate.student_id} mono />
-            </DetailCard>
-          )}
+          <DetailCard title={t('candidates')}>
+            <Row label={t('scope')} value={incident.scope ? tScope(incident.scope) : undefined} />
+            {candidate ? (
+              <>
+                <Row label={tForm('studentName')} value={candidate.student_name} />
+                <Row label={tForm('studentEmail')} value={candidate.student_email} />
+                <Row label={tForm('code')} value={candidate.student_id} mono />
+              </>
+            ) : (
+              incident.scope === 'group' && <p className="text-sm text-muted">{tForm('roomWideNote')}</p>
+            )}
+          </DetailCard>
 
           <DetailCard title={tForm('sectionTiming')}>
             <Row label={tForm('timeStarted')} value={formatTime(incident.time_started)} mono />

@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { StatusBadge } from '@/components/StatusBadge';
+import { formatIssueText } from '@/lib/incidents/format';
 import { cn } from '@/lib/utils';
 import type { IncidentAuditRow } from '@/types/database';
 
@@ -24,6 +25,7 @@ export function AuditTable({
 }) {
   const t = useTranslations('audit');
   const tTable = useTranslations('audit.table');
+  const tScope = useTranslations('scope');
 
   if (incidents.length === 0) {
     return <p className="text-sm text-muted">{t('empty')}</p>;
@@ -32,7 +34,7 @@ export function AuditTable({
   return (
     <div className="overflow-hidden rounded-[10px] border border-border bg-surface shadow-[0_1px_2px_rgba(31,42,49,.04)]">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1640px] text-[13px]">
+        <table className="w-full min-w-[1900px] text-[13px]">
           <thead>
             <tr className="border-b border-border bg-[#f8fafb]">
               {[
@@ -41,7 +43,9 @@ export function AuditTable({
                 tTable('examCycle'),
                 tTable('exam'),
                 tTable('category'),
+                tTable('scope'),
                 tTable('issue'),
+                tTable('issueDescription'),
                 tTable('code'),
                 tTable('studentName'),
                 tTable('studentEmail'),
@@ -102,7 +106,13 @@ export function AuditTable({
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3.5 py-[13px] align-top text-ink">
-                    {incident.incident_codes?.label ?? '—'}
+                    {incident.scope ? tScope(incident.scope) : '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-3.5 py-[13px] align-top text-ink">
+                    {formatIssueText(incident)}
+                  </td>
+                  <td className="min-w-[180px] px-3.5 py-[13px] align-top text-[12.5px] leading-[1.45] text-secondary">
+                    {incident.issue_description ?? '—'}
                   </td>
                   <td className="px-3.5 py-[13px] align-top">
                     <span

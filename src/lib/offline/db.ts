@@ -21,6 +21,7 @@ export interface QueuedIncidentPayload {
   time_started: string | null;
   time_resolved: string | null;
   description: string | null;
+  issue_description: string | null;
   action_taken: string | null;
   remedial_action: string | null;
   remedial_notes: string | null;

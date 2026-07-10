@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { enqueueIncident } from '@/lib/offline/sync';
 import { newClientGeneratedId, combineDateAndTime, calcDurationMinutes } from '@/lib/incidents/reference';
+import { cn } from '@/lib/utils';
 import {
   EXAM_CYCLES,
   type Center,
@@ -13,7 +14,7 @@ import {
   type Incident,
   type IncidentCandidate,
   type IncidentCode,
-  type IncidentStatus,
+  type IncidentScope,
 } from '@/types/database';
 
 interface IncidentFormProps {
@@ -25,9 +26,7 @@ interface IncidentFormProps {
   initialIncident?: Incident & { incident_candidates: IncidentCandidate[] };
 }
 
-type FormErrors = Partial<Record<string, string>>;
-
-const STATUS_OPTIONS: IncidentStatus[] = ['draft', 'submitted', 'reviewed', 'closed'];
+type Affect = 'student' | 'group';
 
 export function IncidentForm({
   exams,
@@ -40,7 +39,6 @@ export function IncidentForm({
   const t = useTranslations('incidentForm');
   const tCommon = useTranslations('common');
   const tCategory = useTranslations('category');
-  const tStatus = useTranslations('status');
   const router = useRouter();
 
   const isEdit = Boolean(initialIncident);
@@ -59,7 +57,9 @@ export function IncidentForm({
     () => incidentCodes.find((c) => c.code === initialIncident?.code)?.category ?? ''
   );
   const [code, setCode] = useState(initialIncident?.code ?? '');
+  const [issueDescription, setIssueDescription] = useState(initialIncident?.issue_description ?? '');
 
+  const [affect, setAffect] = useState<Affect>(initialIncident?.scope === 'group' ? 'group' : 'student');
   const [studentName, setStudentName] = useState(existingCandidate?.student_name ?? '');
   const [studentEmail, setStudentEmail] = useState(existingCandidate?.student_email ?? '');
 
@@ -73,11 +73,10 @@ export function IncidentForm({
   const [questionsAffectedList, setQuestionsAffectedList] = useState(
     initialIncident?.questions_affected_list?.join(', ') ?? ''
   );
-  const [status, setStatus] = useState<IncidentStatus>(initialIncident?.status ?? 'submitted');
 
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'offline' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'offline'; text: string } | null>(null);
 
   const startIso = combineDateAndTime(examDate || null, timeStarted || null);
   const endIso = combineDateAndTime(examDate || null, timeResolved || null);
@@ -88,31 +87,51 @@ export function IncidentForm({
     () => incidentCodes.filter((c) => c.category === category),
     [incidentCodes, category]
   );
+  const isOther = category === 'Other';
+  const affectStudent = affect === 'student';
+
+  function clear<T>(setter: (v: T) => void) {
+    return (v: T) => {
+      setter(v);
+      setFormError('');
+    };
+  }
 
   function handleCategoryChange(next: string) {
     setCategory(next);
     setCode('');
+    setFormError('');
   }
 
-  function validate(): FormErrors {
-    const next: FormErrors = {};
-    if (!centerId) next.centerId = tCommon('required');
-    if (!examId) next.examId = tCommon('required');
-    if (!category) next.category = tCommon('required');
-    if (!code) next.code = tCommon('required');
-    if (!studentName.trim()) next.studentName = tCommon('required');
-    return next;
-  }
-
-  async function handleSubmit(overrideStatus?: IncidentStatus) {
-    const finalStatus = overrideStatus ?? status;
-    const validationErrors = finalStatus === 'draft' ? {} : validate();
-    setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) {
-      setMessage({ type: 'error', text: t('validationError') });
-      return;
+  function validate(): string | null {
+    const missingStudent = affect === 'student' && !studentName.trim();
+    const missingOther = isOther && !issueDescription.trim();
+    if (
+      !centerId ||
+      !examCycle ||
+      !examDate ||
+      !examId ||
+      !category ||
+      !code ||
+      !timeStarted ||
+      !actionTaken.trim() ||
+      missingStudent ||
+      missingOther
+    ) {
+      return t('requiredFieldsError');
     }
+    return null;
+  }
 
+  async function handleSubmit(finalStatus: 'draft' | 'submitted') {
+    if (finalStatus === 'submitted') {
+      const error = validate();
+      if (error) {
+        setFormError(error);
+        return;
+      }
+    }
+    setFormError('');
     setSubmitting(true);
     setMessage(null);
 
@@ -123,9 +142,11 @@ export function IncidentForm({
       .map(Number)
       .filter((n) => !Number.isNaN(n));
 
-    const candidates = studentName.trim()
-      ? [{ student_name: studentName.trim(), student_email: studentEmail.trim() || null }]
-      : [];
+    const scope: IncidentScope = affect === 'student' ? 'individual' : 'group';
+    const candidates =
+      affect === 'student' && studentName.trim()
+        ? [{ student_name: studentName.trim(), student_email: studentEmail.trim() || null }]
+        : [];
 
     await enqueueIncident(
       {
@@ -137,10 +158,11 @@ export function IncidentForm({
         exam_cycle: (examCycle || null) as ExamCycle | null,
         session: null,
         code: code || null,
-        scope: null,
+        scope,
         time_started: startIso,
         time_resolved: endIso,
         description: null,
+        issue_description: isOther ? issueDescription.trim() || null : null,
         action_taken: actionTaken || null,
         remedial_action: null,
         remedial_notes: null,
@@ -186,11 +208,9 @@ export function IncidentForm({
       {message && (
         <div
           className={
-            message.type === 'error'
-              ? 'mb-4 rounded-lg bg-brand-100 p-3 text-sm text-brand-800'
-              : message.type === 'offline'
-                ? 'mb-4 rounded-lg bg-accent-tint p-3 text-sm text-brand-700'
-                : 'mb-4 rounded-lg bg-page p-3 text-sm text-ink ring-1 ring-inset ring-border'
+            message.type === 'offline'
+              ? 'mb-4 rounded-lg bg-accent-tint p-3 text-sm text-brand-700'
+              : 'mb-4 rounded-lg bg-page p-3 text-sm text-ink ring-1 ring-inset ring-border'
           }
         >
           {message.text}
@@ -200,14 +220,14 @@ export function IncidentForm({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          void handleSubmit();
+          void handleSubmit('submitted');
         }}
         className="rounded-[10px] border border-border bg-surface p-7 shadow-[0_1px_2px_rgba(31,42,49,.04),0_6px_24px_rgba(31,42,49,.04)]"
       >
         <SectionLabel>{t('sectionContext')}</SectionLabel>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-x-5 gap-y-[18px]">
-          <Field label={t('center')} error={errors.centerId}>
-            <select className="input" value={centerId} onChange={(e) => setCenterId(e.target.value)}>
+          <Field label={t('center')} required>
+            <select className="input" value={centerId} onChange={(e) => clear(setCenterId)(e.target.value)}>
               <option value="" disabled>
                 {t('centerPlaceholder')}
               </option>
@@ -218,11 +238,11 @@ export function IncidentForm({
               ))}
             </select>
           </Field>
-          <Field label={t('examCycle')} error={errors.examCycle}>
+          <Field label={t('examCycle')} required>
             <select
               className="input"
               value={examCycle}
-              onChange={(e) => setExamCycle(e.target.value as ExamCycle)}
+              onChange={(e) => clear(setExamCycle)(e.target.value as ExamCycle)}
             >
               <option value="" disabled>
                 {t('examCyclePlaceholder')}
@@ -234,16 +254,22 @@ export function IncidentForm({
               ))}
             </select>
           </Field>
-          <Field label={t('examDate')}>
+          <Field label={t('examDate')} required>
             <input
               type="date"
               className="input py-[9px] font-mono"
               value={examDate}
-              onChange={(e) => setExamDate(e.target.value)}
+              onChange={(e) => clear(setExamDate)(e.target.value)}
             />
           </Field>
-          <Field label={t('exam')} error={errors.examId}>
-            <select className="input" value={examId} onChange={(e) => setExamId(e.target.value)}>
+        </div>
+
+        <Divider />
+
+        <SectionLabel>{t('sectionIssue')}</SectionLabel>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-x-5 gap-y-[18px]">
+          <Field label={t('exam')} required>
+            <select className="input" value={examId} onChange={(e) => clear(setExamId)(e.target.value)}>
               <option value="" disabled>
                 {t('examPlaceholder')}
               </option>
@@ -254,13 +280,7 @@ export function IncidentForm({
               ))}
             </select>
           </Field>
-        </div>
-
-        <Divider />
-
-        <SectionLabel>{t('sectionIssue')}</SectionLabel>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-x-5 gap-y-[18px]">
-          <Field label={t('categoryField')} error={errors.category}>
+          <Field label={t('categoryField')} required>
             <select className="input" value={category} onChange={(e) => handleCategoryChange(e.target.value)}>
               <option value="" disabled>
                 {t('categoryPlaceholder')}
@@ -279,12 +299,12 @@ export function IncidentForm({
                 <span className="text-[11.5px] font-medium text-muted">{t('issueHint')}</span>
               </span>
             }
-            error={errors.code}
+            required
           >
             <select
               className={category ? 'input' : 'input cursor-not-allowed bg-[#f6f8f9] text-faint'}
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => clear(setCode)(e.target.value)}
               disabled={!category}
             >
               <option value="" disabled>
@@ -298,41 +318,106 @@ export function IncidentForm({
             </select>
           </Field>
         </div>
+        {isOther && (
+          <div className="mt-[18px]">
+            <Field label={t('issueDescription')} required>
+              <textarea
+                rows={3}
+                placeholder={t('issueDescriptionPlaceholder')}
+                className="input resize-y py-[11px] leading-[1.5]"
+                value={issueDescription}
+                onChange={(e) => clear(setIssueDescription)(e.target.value)}
+              />
+            </Field>
+          </div>
+        )}
 
         <Divider />
 
         <SectionLabel>{t('sectionCandidate')}</SectionLabel>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-x-5 gap-y-[18px]">
-          <Field label={t('studentName')} error={errors.studentName}>
-            <input
-              type="text"
-              placeholder={t('studentNamePlaceholder')}
-              className="input"
-              value={studentName}
-              onChange={(e) => setStudentName(e.target.value)}
-            />
-          </Field>
-          <Field label={t('studentEmail')}>
-            <input
-              type="email"
-              placeholder={t('studentEmailPlaceholder')}
-              className="input"
-              value={studentEmail}
-              onChange={(e) => setStudentEmail(e.target.value)}
-            />
-          </Field>
+        <div className="mb-[18px]">
+          <span className="mb-2 block text-[13px] font-semibold text-ink">
+            {t('whoAffected')}
+            <span className="text-brand-600"> *</span>
+          </span>
+          <div className="flex flex-wrap gap-[10px]">
+            <button
+              type="button"
+              onClick={() => clear(setAffect)('student')}
+              className={cn(
+                'rounded-[7px] border px-4 py-[10px] text-sm font-semibold transition-colors',
+                affectStudent
+                  ? 'border-brand-600 bg-brand-600 text-white shadow-[0_2px_8px_rgba(193,44,104,.22)]'
+                  : 'border-border bg-surface text-secondary'
+              )}
+            >
+              {t('affectStudent')}
+            </button>
+            <button
+              type="button"
+              onClick={() => clear(setAffect)('group')}
+              className={cn(
+                'rounded-[7px] border px-4 py-[10px] text-sm font-semibold transition-colors',
+                !affectStudent
+                  ? 'border-brand-600 bg-brand-600 text-white shadow-[0_2px_8px_rgba(193,44,104,.22)]'
+                  : 'border-border bg-surface text-secondary'
+              )}
+            >
+              {t('affectRoom')}
+            </button>
+          </div>
         </div>
+        {affectStudent ? (
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-x-5 gap-y-[18px]">
+            <Field label={t('studentName')} required>
+              <input
+                type="text"
+                placeholder={t('studentNamePlaceholder')}
+                className="input"
+                value={studentName}
+                onChange={(e) => clear(setStudentName)(e.target.value)}
+              />
+            </Field>
+            <Field label={t('studentEmail')}>
+              <input
+                type="email"
+                placeholder={t('studentEmailPlaceholder')}
+                className="input"
+                value={studentEmail}
+                onChange={(e) => clear(setStudentEmail)(e.target.value)}
+              />
+            </Field>
+          </div>
+        ) : (
+          <div className="flex items-start gap-[10px] rounded-[7px] border border-[#f0d7e2] bg-[#faf2f6] px-[14px] py-3">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#c12c68"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mt-px shrink-0"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" />
+            </svg>
+            <span className="text-[13.5px] leading-[1.5] text-secondary">{t('roomWideNote')}</span>
+          </div>
+        )}
 
         <Divider />
 
         <SectionLabel>{t('sectionTiming')}</SectionLabel>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] items-end gap-x-5 gap-y-[18px]">
-          <Field label={t('timeStarted')}>
+          <Field label={t('timeStarted')} required>
             <input
               type="time"
               className="input py-[9px] font-mono"
               value={timeStarted}
-              onChange={(e) => setTimeStarted(e.target.value)}
+              onChange={(e) => clear(setTimeStarted)(e.target.value)}
             />
           </Field>
           <Field label={t('timeResolved')}>
@@ -340,7 +425,7 @@ export function IncidentForm({
               type="time"
               className="input py-[9px] font-mono"
               value={timeResolved}
-              onChange={(e) => setTimeResolved(e.target.value)}
+              onChange={(e) => clear(setTimeResolved)(e.target.value)}
             />
           </Field>
           <div className="rounded-[7px] border border-[#f0d7e2] bg-[#faf2f6] px-[14px] py-[9px]">
@@ -356,13 +441,13 @@ export function IncidentForm({
         <Divider />
 
         <SectionLabel>{t('sectionResolution')}</SectionLabel>
-        <Field label={t('actionTaken')}>
+        <Field label={t('actionTaken')} required>
           <textarea
             rows={3}
             placeholder={t('actionTakenPlaceholder')}
             className="input resize-y py-[11px] leading-[1.5]"
             value={actionTaken}
-            onChange={(e) => setActionTaken(e.target.value)}
+            onChange={(e) => clear(setActionTaken)(e.target.value)}
           />
         </Field>
         <div className="mt-[18px] grid grid-cols-[130px_1fr] gap-x-5 gap-y-[18px]">
@@ -373,7 +458,7 @@ export function IncidentForm({
               placeholder="0"
               className="input font-mono"
               value={questionsAffectedCount}
-              onChange={(e) => setQuestionsAffectedCount(e.target.value)}
+              onChange={(e) => clear(setQuestionsAffectedCount)(e.target.value)}
             />
           </Field>
           <Field
@@ -388,23 +473,8 @@ export function IncidentForm({
               placeholder={t('questionsAffectedListPlaceholder')}
               className="input font-mono"
               value={questionsAffectedList}
-              onChange={(e) => setQuestionsAffectedList(e.target.value)}
+              onChange={(e) => clear(setQuestionsAffectedList)(e.target.value)}
             />
-          </Field>
-        </div>
-        <div className="mt-[18px] max-w-[280px]">
-          <Field label={t('status')}>
-            <select
-              className="input"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as IncidentStatus)}
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {tStatus(s)}
-                </option>
-              ))}
-            </select>
           </Field>
         </div>
 
@@ -420,6 +490,7 @@ export function IncidentForm({
           >
             {t('saveAsDraft')}
           </button>
+          {formError && <span className="ms-1 text-[13px] font-medium text-brand-600">{formError}</span>}
           <span className="ms-auto text-[12.5px] text-muted">{t('auditHint')}</span>
         </div>
       </form>
@@ -439,18 +510,20 @@ function Divider() {
 
 function Field({
   label,
-  error,
+  required,
   children,
 }: {
   label: React.ReactNode;
-  error?: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[13px] font-semibold text-ink">{label}</span>
+      <span className="mb-1.5 block text-[13px] font-semibold text-ink">
+        {label}
+        {required && <span className="text-brand-600"> *</span>}
+      </span>
       {children}
-      {error && <p className="mt-1 text-xs text-brand-600">{error}</p>}
     </label>
   );
 }
